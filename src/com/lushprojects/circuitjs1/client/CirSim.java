@@ -1078,6 +1078,8 @@ MouseOutHandler, MouseWheelHandler {
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Tapped Transformer"), "TappedTransformerElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Transmission Line"), "TransLineElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Relay"), "RelayElm"));
+    	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Relay Coil"), "RelayCoilElm"));
+    	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Relay Contact"), "RelayContactElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Memristor"), "MemristorElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Spark Gap"), "SparkGapElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Fuse"), "FuseElm"));
@@ -5736,6 +5738,8 @@ MouseOutHandler, MouseWheelHandler {
     	case 422: return new DelayBufferElm(x1, y1, x2, y2, f, st);
     	case 423: return new LineElm(x1, y1, x2, y2, f, st);
     	case 424: return new DataInputElm(x1, y1, x2, y2, f, st);
+    	case 425: return new RelayCoilElm(x1, y1, x2, y2, f, st);
+    	case 426: return new RelayContactElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5805,6 +5809,10 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new TransLineElm(x1, y1);
     	if (n=="RelayElm")
     		return (CircuitElm) new RelayElm(x1, y1);
+    	if (n=="RelayCoilElm")
+    		return (CircuitElm) new RelayCoilElm(x1, y1);
+    	if (n=="RelayContactElm")
+    		return (CircuitElm) new RelayContactElm(x1, y1);
     	if (n=="MemristorElm")
     		return (CircuitElm) new MemristorElm(x1, y1);
     	if (n=="SparkGapElm")
