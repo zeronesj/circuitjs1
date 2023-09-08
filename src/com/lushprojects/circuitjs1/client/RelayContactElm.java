@@ -37,20 +37,15 @@ class RelayContactElm extends CircuitElm {
     String label;
     
     // fractional position, between 0 and 1 inclusive
-    double d_position;
+//    double d_position;
     
     // integer position, can be 0 (off), 1 (on), 2 (in between)
     int i_position;
     
-    // time to switch in seconds, or 0 for old model where switching time was not constant
-    double switchingTime;
-    
     int poleCount;
     int openhs;
-    boolean onState;
     final int nSwitch0 = 0;
     final int nSwitch1 = 1;
-    final int nSwitch2 = 2;
     double currentOffset1, currentOffset2;
     
     public RelayContactElm(int xx, int yy) {
@@ -58,21 +53,17 @@ class RelayContactElm extends CircuitElm {
 	noDiagonal = true;
 	r_on = .05;
 	r_off = 1e6;
-	switchingTime = 5e-3;
+	label = "label";
     }
     public RelayContactElm(int xa, int ya, int xb, int yb, int f,
 		    StringTokenizer st) {
 	super(xa, ya, xb, yb, f);
+	label = CustomLogicModel.unescape(st.nextToken());
 	r_on = new Double(st.nextToken()).doubleValue();
 	r_off = new Double(st.nextToken()).doubleValue();
 	try {
-	    d_position = i_position = Integer.parseInt(st.nextToken());
+	    i_position = Integer.parseInt(st.nextToken());
 	} catch (Exception e) {}	
-	if (i_position == 1)
-	    onState = true;
-	// intermediate state?
-	if (i_position == 2)
-	    d_position = .5;
 	noDiagonal = true;
         allocNodes();
     }
@@ -81,25 +72,36 @@ class RelayContactElm extends CircuitElm {
     
     String dump() {
 	// escape label
-	return super.dump() + " " + label + " " + r_on + " " + r_off + " " + switchingTime + " " + i_position;
+	return super.dump() + " " + CustomLogicModel.escape(label) + " " + r_on + " " + r_off + " " + i_position;
     }
     
     void draw(Graphics g) {
 	int i;
-	for (i = 0; i != 3; i++) {
+	for (i = 0; i != 2; i++) {
 	    // draw lead
 	    setVoltageColor(g, volts[nSwitch0+i]);
 	    drawThickLine(g, swposts[i], swpoles[i]);
 	}
 	
-	interpPoint(swpoles[1], swpoles[2], ptSwitch, d_position);
+	interpPoint(swpoles[1], swpoles[2], ptSwitch, i_position);
 	//setVoltageColor(g, volts[nSwitch0]);
 	g.setColor(Color.lightGray);
 	drawThickLine(g, swpoles[0], ptSwitch);
+	
+	g.setColor(needsHighlight() ? selectColor : whiteColor);
+	if (x == x2)
+	    g.drawString(label, x+10, swpoles[y < y2 ? 0 : 1].y-5);
+	else {
+            g.save();
+            g.context.setTextAlign("center");
+	    g.drawString(label, (x+x2)/2, y+15);
+	    g.restore();
+	}
+
 	switchCurCount = updateDotCount(switchCurrent, switchCurCount);
 	drawDots(g, swposts[0], swpoles[0], switchCurCount);
 	
-	if (i_position != 2)
+	if (i_position == 0)
 	    drawDots(g, swpoles[i_position+1], swposts[i_position+1], switchCurCount);
 	
 	drawPosts(g);
@@ -117,7 +119,7 @@ class RelayContactElm extends CircuitElm {
     void setPoints() {
 	super.setPoints();
 	allocNodes();
-	openhs = -dsign*16;
+	openhs = dsign*16;
 
 	// switch
 	calcLeads(32);
@@ -129,29 +131,26 @@ class RelayContactElm extends CircuitElm {
 	    swpoles[j] = new Point();
 	}
 	interpPoint(lead1,  lead2, swpoles[0], 0, 0);
-	interpPoint(lead1,  lead2, swpoles[1], 1, -openhs);
+	interpPoint(lead1,  lead2, swpoles[1], 1, 0);
 	interpPoint(lead1,  lead2, swpoles[2], 1, openhs);
 	interpPoint(point1, point2, swposts[0], 0, 0);
-	interpPoint(point1, point2, swposts[1], 1, -openhs);
+	interpPoint(point1, point2, swposts[1], 1, 0);
 	interpPoint(point1, point2, swposts[2], 1, openhs);
 	ptSwitch = new Point();
     }
     
-    public void setPosition(boolean onState_, int i_position_, double d_position_) {
-	onState = onState_;
+    public void setPosition(int i_position_) {
 	i_position = i_position_;
-	d_position = d_position_;
-	sim.console("setpos " + onState + " " + i_position);
     }
 
     Point getPost(int n) {
 	return swposts[n];
     }
-    int getPostCount() { return 3; }
+    int getPostCount() { return 2; }
     void reset() {
 	super.reset();
 	switchCurrent = switchCurCount = 0;
-	d_position = i_position = 0;
+	i_position = 0;
 
 	// preserve onState because if we don't, Relay Flip-Flop gets left in a weird state on reset.
 	// onState = false;
@@ -160,7 +159,6 @@ class RelayContactElm extends CircuitElm {
     void stamp() {
 	sim.stampNonLinear(nodes[nSwitch0]);
 	sim.stampNonLinear(nodes[nSwitch1]);
-	sim.stampNonLinear(nodes[nSwitch2]);
     }
     
     // we need this to be able to change the matrix for each step
@@ -168,12 +166,11 @@ class RelayContactElm extends CircuitElm {
 
     void doStep() {
 	sim.stampResistor(nodes[nSwitch0], nodes[nSwitch1], i_position == 0 ? r_on : r_off);
-	sim.stampResistor(nodes[nSwitch0], nodes[nSwitch2], i_position == 1 ? r_on : r_off);
     }
     void calculateCurrent() {
 	// actually this isn't correct, since there is a small amount
 	// of current through the switch when off
-	if (i_position == 2)
+	if (i_position == 1)
 	    switchCurrent = 0;
 	else
 	    switchCurrent = (volts[nSwitch0]-volts[nSwitch1+i_position])/r_on;
@@ -184,8 +181,6 @@ class RelayContactElm extends CircuitElm {
 	    arr[0] += " (" + Locale.LS("off") + ")";
 	else if (i_position == 1)
 	    arr[0] += " (" + Locale.LS("on") + ")";
-	if (switchingTime == 0)
-	    arr[0] += " (" + Locale.LS("old model") + ")";
 	int i;
 	int ln = 1;
 	arr[ln++] = "I = " + getCurrentDText(switchCurrent);

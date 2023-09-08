@@ -271,7 +271,7 @@ class RelayCoilElm extends CircuitElm {
 		if (o instanceof RelayContactElm) {
 		    RelayContactElm s2 = (RelayContactElm) o;
 		    if (s2.label.equals(label))
-			s2.setPosition(onState, i_position, d_position);
+			s2.setPosition(i_position == 0 ? 1 : 0);
 		}
 	    }
     }
