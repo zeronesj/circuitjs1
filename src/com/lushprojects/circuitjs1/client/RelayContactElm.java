@@ -35,6 +35,7 @@ class RelayContactElm extends CircuitElm {
     Point swposts[], swpoles[], ptSwitch;
     double switchCurrent, switchCurCount;
     String label;
+    final int FLAG_NORMALLY_CLOSED = 2;
     
     // fractional position, between 0 and 1 inclusive
 //    double d_position;
@@ -105,7 +106,7 @@ class RelayContactElm extends CircuitElm {
 	    drawDots(g, swpoles[i_position+1], swposts[i_position+1], switchCurCount);
 	
 	drawPosts(g);
-	adjustBbox(swposts[0], swposts[1]);
+	setBbox(point1, point2, openhs);
     }
 	
     double getCurrentIntoNode(int n) {
@@ -140,9 +141,11 @@ class RelayContactElm extends CircuitElm {
     }
     
     public void setPosition(int i_position_) {
-	i_position = i_position_;
+	i_position = (isNormallyClosed()) ? (1-i_position_) : i_position_;
     }
 
+    boolean isNormallyClosed() { return (flags & FLAG_NORMALLY_CLOSED) != 0; }
+    
     Point getPost(int n) {
 	return swposts[n];
     }
@@ -195,6 +198,8 @@ class RelayContactElm extends CircuitElm {
 	    ei.text = label;
 	    return ei;
 	}
+	if (n == 3)
+	    return EditInfo.createCheckbox("Normally Closed", isNormallyClosed());
 	return null;
     }
     
@@ -205,6 +210,8 @@ class RelayContactElm extends CircuitElm {
 	    r_off = ei.value;
         if (n == 2)
 	    label = ei.textf.getText();
+        if (n == 3)
+            flags = ei.changeFlag(flags, FLAG_NORMALLY_CLOSED);
     }
     
     boolean getConnection(int n1, int n2) {
