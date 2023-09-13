@@ -340,7 +340,7 @@ class RelayCoilElm extends CircuitElm {
 	if (n == 5)
 	    return new EditInfo("Switching Time (s)", switchingTime, 0, 0);
 	if (n == 6) {
-	    EditInfo ei = new EditInfo("Label", 0);
+	    EditInfo ei = new EditInfo("Label (for linking)", 0);
 	    ei.text = label;
 	    return ei;
 	}

@@ -226,7 +226,7 @@ class RelayContactElm extends CircuitElm {
 	if (n == 1)
 	    return new EditInfo("Off Resistance (ohms)", r_off, 0, 0);
 	if (n == 2) {
-	    EditInfo ei = new EditInfo("Label", 0);
+	    EditInfo ei = new EditInfo("Label (for linking)", 0);
 	    ei.text = label;
 	    return ei;
 	}
