@@ -54,10 +54,10 @@ class RelayCoilElm extends CircuitElm {
     int state;
     int switchPosition;
     
-    final int TYPE_NORMAL = 0;
-    final int TYPE_ON_DELAY = 1; 
-    final int TYPE_OFF_DELAY = 2;
-    final int TYPE_LATCHING = 3;
+    public static final int TYPE_NORMAL = 0;
+    public static final int TYPE_ON_DELAY = 1; 
+    public static final int TYPE_OFF_DELAY = 2;
+    public static final int TYPE_LATCHING = 3;
     int type;
     
     final int nSwitch0 = 0;
@@ -293,7 +293,7 @@ class RelayCoilElm extends CircuitElm {
 	    if (o instanceof RelayContactElm) {
 		RelayContactElm s2 = (RelayContactElm) o;
 		if (s2.label.equals(label))
-		    s2.setPosition(1-switchPosition);
+		    s2.setPosition(1-switchPosition, type);
 	    }
 	}
     }

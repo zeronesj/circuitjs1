@@ -36,7 +36,9 @@ class RelayContactElm extends CircuitElm {
     double switchCurrent, switchCurCount;
     String label;
     final int FLAG_NORMALLY_CLOSED = 2;
-    
+    final int FLAG_IEC = 4;
+    int type;
+
     // fractional position, between 0 and 1 inclusive
 //    double d_position;
     
@@ -48,13 +50,15 @@ class RelayContactElm extends CircuitElm {
     final int nSwitch0 = 0;
     final int nSwitch1 = 1;
     double currentOffset1, currentOffset2;
-    
+    Point extraPoints[];
+
     public RelayContactElm(int xx, int yy) {
 	super(xx, yy);
 	noDiagonal = true;
 	r_on = .05;
 	r_off = 1e6;
 	label = "label";
+	flags |= FLAG_IEC;
     }
     public RelayContactElm(int xa, int ya, int xb, int yb, int f,
 		    StringTokenizer st) {
@@ -70,7 +74,8 @@ class RelayContactElm extends CircuitElm {
     }
     
     int getDumpType() { return 426; }
-    
+    boolean useIECSymbol() { return (flags & FLAG_IEC) != 0; }
+
     String dump() {
 	// escape label
 	return super.dump() + " " + CustomLogicModel.escape(label) + " " + r_on + " " + r_off + " " + i_position;
@@ -95,8 +100,27 @@ class RelayContactElm extends CircuitElm {
 	else {
             g.save();
             g.context.setTextAlign("center");
-	    g.drawString(label, (x+x2)/2, y+15);
+            g.drawString(label, (x+x2)/2, y+15);
 	    g.restore();
+	}
+
+	if (useIECSymbol() && (type == RelayCoilElm.TYPE_ON_DELAY || type == RelayCoilElm.TYPE_OFF_DELAY)) {
+	    g.setColor(Color.lightGray);
+	    interpPoint(lead1, lead2, extraPoints[0], .5-2/32., i_position == 1 ? openhs/2 : 0);
+	    interpPoint(lead1, lead2, extraPoints[1], .5+2/32., i_position == 1 ? openhs/2 : 0);
+	    g.drawLine(extraPoints[0], extraPoints[2]);
+	    g.drawLine(extraPoints[1], extraPoints[3]);
+	    g.context.beginPath();
+	    double ang = -Math.atan2(-dy*dsign, dx*dsign);
+	    int ds = 22*dsign;
+	    if (type == RelayCoilElm.TYPE_OFF_DELAY) {
+		ang += Math.PI;
+		interpPoint(lead1, lead2, extraPoints[4], .5, ds+6*dsign);
+	    } else {
+		interpPoint(lead1, lead2, extraPoints[4], .5, ds-5*dsign);
+	    }
+	    g.context.arc(extraPoints[4].x, extraPoints[4].y, 6, -Math.PI/8+ang, Math.PI*9/8+ang, true);
+	    g.context.stroke();
 	}
 
 	switchCurCount = updateDotCount(switchCurrent, switchCurCount);
@@ -138,10 +162,18 @@ class RelayContactElm extends CircuitElm {
 	interpPoint(point1, point2, swposts[1], 1, 0);
 	interpPoint(point1, point2, swposts[2], 1, openhs);
 	ptSwitch = new Point();
+	
+	if (useIECSymbol()) {
+	    extraPoints = newPointArray(5);
+	    int ds = 22*dsign;
+	    interpPoint(lead1, lead2, extraPoints[2], .5-2/32., ds);
+	    interpPoint(lead1, lead2, extraPoints[3], .5+2/32., ds);
+	}
     }
     
-    public void setPosition(int i_position_) {
+    public void setPosition(int i_position_, int type_) {
 	i_position = (isNormallyClosed()) ? (1-i_position_) : i_position_;
+	type = type_;
     }
 
     boolean isNormallyClosed() { return (flags & FLAG_NORMALLY_CLOSED) != 0; }
@@ -200,6 +232,8 @@ class RelayContactElm extends CircuitElm {
 	}
 	if (n == 3)
 	    return EditInfo.createCheckbox("Normally Closed", isNormallyClosed());
+	if (n == 4)
+	    return EditInfo.createCheckbox("IEC Symbol", useIECSymbol());
 	return null;
     }
     
@@ -212,6 +246,10 @@ class RelayContactElm extends CircuitElm {
 	    label = ei.textf.getText();
         if (n == 3)
             flags = ei.changeFlag(flags, FLAG_NORMALLY_CLOSED);
+	if (n == 4) {
+	    flags = ei.changeFlag(flags, FLAG_IEC);
+	    setPoints();
+	}
     }
     
     boolean getConnection(int n1, int n2) {
