@@ -17,6 +17,7 @@ class ThreePhaseMotorElm extends CircuitElm {
 
     double coilCurrent;
     double inertiaCurrent;
+    double curcounts[];
     Point posts[], leads[];
     
     public ThreePhaseMotorElm(int xx, int yy) { 
@@ -38,6 +39,7 @@ class ThreePhaseMotorElm extends CircuitElm {
 	gearRatio = new Double(st.nextToken()).doubleValue();
 	tau = 		new Double(st.nextToken()).doubleValue();
         voltSources = new int[2];
+        curcounts = new double[3];
     }
     int getDumpType() { return 427; }
     String dump() {
@@ -54,8 +56,8 @@ class ThreePhaseMotorElm extends CircuitElm {
 	leads = newPointArray(3);
 	posts[1] = point1;
 	interpPoint2(point1, point2, posts[0], posts[2], 0, 32);
-	interpPoint2(point1, point2, leads[0], leads[2], 16/dn, 32);
-	interpPoint(point1, point2, leads[1], 16/dn);
+	interpPoint2(point1, point2, leads[0], leads[2], 1, 32);
+	interpPoint(point1, point2, leads[1], (dn-cr)/dn);
 	motorCenter = point2;
 	allocNodes();
     }
@@ -79,8 +81,8 @@ class ThreePhaseMotorElm extends CircuitElm {
     final int n007_ind = 9;
     final int nn_ind = 10;
     
-    final double Rs = .067;
-    final double Rr = .032;
+    final double Rs = .435;
+    final double Rr = .816;
     final double Cj = .64;
     final double Ls = .0294;
     final double Lr = .0297;
@@ -129,15 +131,10 @@ class ThreePhaseMotorElm extends CircuitElm {
         int j;
         // fill off-diagonal
         for (i = 0; i != coilCount; i++)
-            for (j = 0; j != i; j++) {
+            for (j = 0; j != i; j++)
                 xformMatrix[i][j] = xformMatrix[j][i] = couplingCoefs[i][j]*Math.sqrt(coilInductances[i]*coilInductances[j]);
-                sim.console("xform " + i + " " + j + " "+ xformMatrix[i][j]);
-            }
 	
         CirSim.invertMatrix(xformMatrix, coilCount);
-        for (i = 0; i != coilCount; i++)
-            for (j = 0; j != coilCount; j++)
-        	sim.console("xform " + i + " " + j + " "+ xformMatrix[i][j]);
 
         double ts = sim.timeStep;
         for (i = 0; i != coilCount; i++)
@@ -181,14 +178,14 @@ class ThreePhaseMotorElm extends CircuitElm {
             coilCurSourceValues[i] = val;
         }
         
-        speed += sim.timeStep * (Zp * Math.sqrt(3)/2 * Lm * (coilCurrents[1]-coilCurrents[2]) * coilCurrents[3] - Math.sqrt(3) * coilCurrents[0] * coilCurrents[4]);
+        double torque = Zp * Math.sqrt(3)/2 * Lm * (coilCurrents[1]-coilCurrents[2]) * coilCurrents[3] - Math.sqrt(3) * coilCurrents[0] * coilCurrents[4];
+	speed += sim.timeStep * (torque - b * speed);
         angle= angle + speed*sim.timeStep;
 
 	int n002 = nodes[n002_ind];
 	int n006 = nodes[n006_ind];
         sim.updateVoltageSource(n002, 0, voltSources[0], -Zp*speed*(Lm*Math.sqrt(3)/2 * (coilCurrents[1]-coilCurrents[2]) + 1.5*Lr*coilCurrents[4]));
         sim.updateVoltageSource(n006, 0, voltSources[1], Zp*speed*(3/2.*Lm*coilCurrents[0] + 1.5*Lr*coilCurrents[3]));
-        sim.console("iter " + speed);
     }
     
     void doStep() {
@@ -231,9 +228,10 @@ class ThreePhaseMotorElm extends CircuitElm {
     	return true;
     }
     
+    int cr = 37;
+    
     void draw(Graphics g) {
 
-	int cr = 27;
 	int hs = 8;
 	setBbox(point1, point2, cr);
 	
@@ -241,10 +239,11 @@ class ThreePhaseMotorElm extends CircuitElm {
 	for (i = 0; i != 3; i++) {
 	    setVoltageColor(g, volts[i]);
 	    drawThickLine(g, posts[i], leads[i]);
+	    curcounts[i] = updateDotCount(coilCurrents[i], curcounts[i]);
+	    drawDots(g, posts[i], leads[i], curcounts[i]);
 	}
 	
 	//getCurrent();
-	doDots(g);
 	setPowerColor(g, true);
 	Color cc = new Color((int) (165), (int) (165), (int) (165));
 	g.setColor(cc);
@@ -256,7 +255,7 @@ class ThreePhaseMotorElm extends CircuitElm {
 	g.fillOval(motorCenter.x-(int)(cr/2.2), motorCenter.y-(int)(cr/2.2), (int)(2*cr/2.2), (int)(2*cr/2.2));
 
 	g.setColor(cc);
-	double q = .28*1.7 * 36/dn;
+	double q = .28*1.7 * 36/dn * 37/27;
 	interpPointFix(point1, point2, ps1, 1 + q*Math.cos(angleAux*gearRatio), q*Math.sin(angleAux*gearRatio));
 	interpPointFix(point1, point2, ps2, 1 - q*Math.cos(angleAux*gearRatio), -q*Math.sin(angleAux*gearRatio));
 
