@@ -699,12 +699,14 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	});
 
-	/*
+	
+/*
 	dumpMatrixButton = new Button("Dump Matrix");
 	dumpMatrixButton.addClickHandler(new ClickHandler() {
 	    public void onClick(ClickEvent event) { dumpMatrix = true; }});
 	verticalPanel.add(dumpMatrixButton);// IES for debugging
-	 */
+*/
+	
 
 	if (LoadFile.isSupported())
 	    verticalPanel.add(loadFileInput = new LoadFile(this));
@@ -1128,6 +1130,7 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem(Locale.LS("Add LED Array"), "LEDArrayElm"));
     	outputMenuBar.addItem(getClassCheckItem(Locale.LS("Add Stop Trigger"), "StopTriggerElm"));
     	outputMenuBar.addItem(getClassCheckItem(Locale.LS("Add DC Motor"), "DCMotorElm"));
+    	outputMenuBar.addItem(getClassCheckItem(Locale.LS("Add 3-Phase Motor"), "ThreePhaseMotorElm"));
     	outputMenuBar.addItem(getClassCheckItem(Locale.LS("Add Wattmeter"), "WattmeterElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+Locale.LS("&nbsp;</div>Outputs and Labels")), outputMenuBar);
     	
@@ -2517,7 +2520,7 @@ MouseOutHandler, MouseWheelHandler {
 	    /*System.out.println("row " + i + " " + re.lsChanges + " " + re.rsChanges + " " +
 			       re.dropRow);*/
 	    
-//	    if (qp != -100) continue;   // uncomment this line to disable matrix simplification for debugging purposes
+	    //if (qp != -100) continue;   // uncomment this line to disable matrix simplification for debugging purposes
 	    
 	    if (re.lsChanges || re.dropRow || re.rsChanges)
 		continue;
@@ -5740,6 +5743,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 424: return new DataInputElm(x1, y1, x2, y2, f, st);
     	case 425: return new RelayCoilElm(x1, y1, x2, y2, f, st);
     	case 426: return new RelayContactElm(x1, y1, x2, y2, f, st);
+    	case 427: return new ThreePhaseMotorElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5813,6 +5817,8 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new RelayCoilElm(x1, y1);
     	if (n=="RelayContactElm")
     		return (CircuitElm) new RelayContactElm(x1, y1);
+    	if (n=="ThreePhaseMotorElm")
+    		return (CircuitElm) new ThreePhaseMotorElm(x1, y1);
     	if (n=="MemristorElm")
     		return (CircuitElm) new MemristorElm(x1, y1);
     	if (n=="SparkGapElm")

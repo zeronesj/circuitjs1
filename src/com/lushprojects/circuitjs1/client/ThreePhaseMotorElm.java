@@ -7,11 +7,8 @@ import com.lushprojects.circuitjs1.client.util.Locale;
 
 class ThreePhaseMotorElm extends CircuitElm {
 
-    Inductor ind, indInertia;
-    // Electrical parameters
-    double resistance, inductance;
-    // Electro-mechanical parameters
-    double K, Kb, J, b, gearRatio, tau; //tau reserved for static friction parameterization  
+    double Rs, Rr, Ls, Lr, Lm;
+    double b;
     public double angle;
     public double speed;
 
@@ -22,29 +19,35 @@ class ThreePhaseMotorElm extends CircuitElm {
     
     public ThreePhaseMotorElm(int xx, int yy) { 
 	super(xx, yy); 
-	inductance = .5; resistance = 1; angle = pi/2; speed = 0; K = 0.15; b= 0.05; J = 0.02; Kb = 0.15; gearRatio=1; tau=0;
+	Rs = .435;
+	Rr = .816;
+	Ls = .0294;
+	Lr = .0297;
+	Lm = .0287;
+	angle = pi/2; speed = 0;
+	b= 0.05;
         voltSources = new int[2];
+        curcounts = new double[3];
+        coilCurrents = new double[coilCount];
     }
     public ThreePhaseMotorElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st) {
 	super(xa, ya, xb, yb, f);
-	angle = pi/2;speed = 0;
-	//read:
-	// inductance; resistance, K, Kb, J, b, gearRatio, tau
-	inductance = new Double(st.nextToken()).doubleValue();
-	resistance = new Double(st.nextToken()).doubleValue(); 
-	K = 		new Double(st.nextToken()).doubleValue();
-	Kb = 		new Double(st.nextToken()).doubleValue();
-	J = 		new Double(st.nextToken()).doubleValue();
+	angle = pi/2;
+	speed = 0;
+	Rs = new Double(st.nextToken()).doubleValue();
+	Rr = new Double(st.nextToken()).doubleValue(); 
+	Ls = 		new Double(st.nextToken()).doubleValue();
+	Lr = 		new Double(st.nextToken()).doubleValue();
+	Lm = 		new Double(st.nextToken()).doubleValue();
 	b = 		new Double(st.nextToken()).doubleValue();
-	gearRatio = new Double(st.nextToken()).doubleValue();
-	tau = 		new Double(st.nextToken()).doubleValue();
         voltSources = new int[2];
         curcounts = new double[3];
+        coilCurrents = new double[coilCount];
     }
     int getDumpType() { return 427; }
     String dump() {
 	// dump: inductance; resistance, K, Kb, J, b, gearRatio, tau
-	return super.dump() + " " +  inductance + " " + resistance + " " + K + " " +  Kb + " " + J + " " + b + " " + gearRatio + " " + tau;
+	return super.dump() + " " +  Rs + " " + Rr + " " + Ls + " " +  Lr + " " + Lm + " " + b;
     }
     public double getAngle(){ return(angle);}
 
@@ -81,12 +84,6 @@ class ThreePhaseMotorElm extends CircuitElm {
     final int n007_ind = 9;
     final int nn_ind = 10;
     
-    final double Rs = .435;
-    final double Rr = .816;
-    final double Cj = .64;
-    final double Ls = .0294;
-    final double Lr = .0297;
-    final double Lm = .0287;
     final double Zp = 2;
     
     final int coilCount = 5;
@@ -256,6 +253,7 @@ class ThreePhaseMotorElm extends CircuitElm {
 
 	g.setColor(cc);
 	double q = .28*1.7 * 36/dn * 37/27;
+	final int gearRatio = 1;
 	interpPointFix(point1, point2, ps1, 1 + q*Math.cos(angleAux*gearRatio), q*Math.sin(angleAux*gearRatio));
 	interpPointFix(point1, point2, ps2, 1 - q*Math.cos(angleAux*gearRatio), -q*Math.sin(angleAux*gearRatio));
 
@@ -290,47 +288,37 @@ class ThreePhaseMotorElm extends CircuitElm {
 	arr[0] = "3-Phase Motor";
 	getBasicInfo(arr);
 	arr[3] = Locale.LS("speed") + " = " + getUnitText(60*Math.abs(speed)/(2*Math.PI), Locale.LS("RPM"));
-	arr[4] = "L = " + getUnitText(inductance, "H");
-	arr[5] = "R = " + getUnitText(resistance, Locale.ohmString);
-	arr[6] = "P = " + getUnitText(getPower(), "W");
     }
+    
     public EditInfo getEditInfo(int n) {
 
 	if (n == 0)
-	    return new EditInfo("Armature inductance (H)", inductance, 0, 0);
+	    return new EditInfo("Stator Inductance (H)", Ls, 0, 0);
 	if (n == 1)
-	    return new EditInfo("Armature Resistance (ohms)", resistance, 0, 0);
+	    return new EditInfo("Rotor Inductance (H)", Lr, 0, 0);
 	if (n == 2)
-	    return new EditInfo("Torque constant (Nm/A)", K, 0, 0);
+	    return new EditInfo("Magnetizing Inductance (H)", Lm, 0, 0);
 	if (n == 3)
-	    return new EditInfo("Back emf constant (Vs/rad)", Kb, 0, 0);
+	    return new EditInfo("Stator Resistance (ohms)", Rs, 0, 0);
 	if (n == 4)
-	    return new EditInfo("Moment of inertia (Kg.m^2)", J, 0, 0);
+	    return new EditInfo("Rotor Resistance (ohms)", Rr, 0, 0);
 	if (n == 5)
 	    return new EditInfo("Friction coefficient (Nms/rad)", b, 0, 0);
-	if (n == 6)
-	    return new EditInfo("Gear Ratio", gearRatio, 0, 0);
 	return null;
     }
     public void setEditValue(int n, EditInfo ei) {
 
-	if (ei.value > 0 & n==0) {
-            inductance = ei.value;
-            ind.setup(inductance, current, Inductor.FLAG_BACK_EULER);
-        }
+	if (ei.value > 0 & n==0)
+	    Ls = ei.value;
 	if (ei.value > 0 & n==1)
-	    resistance = ei.value;
+	    Lr = ei.value;
 	if (ei.value > 0 & n==2)
-	    K = ei.value;
+	    Lm = ei.value;
 	if (ei.value > 0 & n==3)
-	    Kb = ei.value;
-	if (ei.value > 0 & n==4) {
-            J = ei.value;
-            indInertia.setup(J, inertiaCurrent, Inductor.FLAG_BACK_EULER);
-        }
+	    Rs = ei.value;
+	if (ei.value > 0 & n==4)
+	    Rr = ei.value;
 	if (ei.value > 0 & n==5)
 	    b = ei.value;
-	if (ei.value > 0 & n==6)
-	    gearRatio = ei.value;
     }
 }
