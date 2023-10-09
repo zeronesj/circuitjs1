@@ -15,6 +15,7 @@ class ThreePhaseMotorElm extends CircuitElm {
     double coilCurrent;
     double inertiaCurrent;
     double curcounts[];
+    double J;
     Point posts[], leads[];
     
     public ThreePhaseMotorElm(int xx, int yy) { 
@@ -24,6 +25,7 @@ class ThreePhaseMotorElm extends CircuitElm {
 	Ls = .0294;
 	Lr = .0297;
 	Lm = .0287;
+	J = 1;
 	angle = pi/2; speed = 0;
 	b= 0.05;
         voltSources = new int[2];
@@ -40,6 +42,9 @@ class ThreePhaseMotorElm extends CircuitElm {
 	Lr = new Double(st.nextToken()).doubleValue();
 	Lm = new Double(st.nextToken()).doubleValue();
 	b =  new Double(st.nextToken()).doubleValue();
+	try {
+	    J = new Double(st.nextToken()).doubleValue();
+	} catch (Exception e) { J = 1; }
         voltSources = new int[2];
         curcounts = new double[3];
         coilCurrents = new double[coilCount];
@@ -47,7 +52,7 @@ class ThreePhaseMotorElm extends CircuitElm {
     int getDumpType() { return 427; }
     String dump() {
 	// dump: inductance; resistance, K, Kb, J, b, gearRatio, tau
-	return super.dump() + " " +  Rs + " " + Rr + " " + Ls + " " +  Lr + " " + Lm + " " + b;
+	return super.dump() + " " +  Rs + " " + Rr + " " + Ls + " " +  Lr + " " + Lm + " " + b + " " + J;
     }
     public double getAngle(){ return(angle);}
 
@@ -58,11 +63,12 @@ class ThreePhaseMotorElm extends CircuitElm {
 	posts = newPointArray(6);
 	leads = newPointArray(6);
 	int i;
+	int q = (Math.abs(dy) > Math.abs(dx)) ? -1 : 1;
 	for (i = 0; i != 3; i++) {
-	    interpPoint(point1, point2, posts[i*2], 0, -32*(i-1));
-	    interpPoint(point1, point2, leads[i*2], .45, -32*(i-1));
-	    interpPoint(point1, point2, posts[i*2+1], 1, 32*(i-1));
-	    interpPoint(point1, point2, leads[i*2+1], .55, 32*(i-1));
+	    interpPoint(point1, point2, posts[i*2], 0, -q*32*(i-1));
+	    interpPoint(point1, point2, leads[i*2], .45, -q*32*(i-1));
+	    interpPoint(point1, point2, posts[i*2+1], 1, q*32*(i-1));
+	    interpPoint(point1, point2, leads[i*2+1], .55, q*32*(i-1));
 	}
 	motorCenter = interpPoint(point1, point2, .5);
 	allocNodes();
@@ -177,7 +183,7 @@ class ThreePhaseMotorElm extends CircuitElm {
         }
         
         double torque = Zp * Math.sqrt(3)/2 * Lm * (coilCurrents[1]-coilCurrents[2]) * coilCurrents[3] - Math.sqrt(3) * coilCurrents[0] * coilCurrents[4];
-	speed += sim.timeStep * (torque - b * speed);
+	speed += sim.timeStep * (torque/J - b * speed);
         angle= angle + speed*sim.timeStep;
 
 	int n002 = nodes[n002_ind];
@@ -336,21 +342,25 @@ class ThreePhaseMotorElm extends CircuitElm {
 	    return new EditInfo("Rotor Resistance (ohms)", Rr, 0, 0);
 	if (n == 5)
 	    return new EditInfo("Friction coefficient (Nms/rad)", b, 0, 0);
+	if (n == 6)
+	    return new EditInfo("Moment of inertia (Kg.m^2)", J, 0, 0);
 	return null;
     }
     public void setEditValue(int n, EditInfo ei) {
 
-	if (ei.value > 0 & n==0)
+	if (ei.value > 0 && n==0)
 	    Ls = ei.value;
-	if (ei.value > 0 & n==1)
+	if (ei.value > 0 && n==1)
 	    Lr = ei.value;
-	if (ei.value > 0 & n==2)
+	if (ei.value > 0 && n==2)
 	    Lm = ei.value;
-	if (ei.value > 0 & n==3)
+	if (ei.value > 0 && n==3)
 	    Rs = ei.value;
-	if (ei.value > 0 & n==4)
+	if (ei.value > 0 && n==4)
 	    Rr = ei.value;
-	if (ei.value > 0 & n==5)
+	if (ei.value > 0 && n==5)
 	    b = ei.value;
+	if (ei.value > 0 && n==6)
+	    J = ei.value;
     }
 }
