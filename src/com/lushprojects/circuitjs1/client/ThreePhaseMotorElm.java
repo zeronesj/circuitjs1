@@ -58,11 +58,13 @@ class ThreePhaseMotorElm extends CircuitElm {
 	posts = newPointArray(6);
 	leads = newPointArray(6);
 	int i;
-	for (i = 0; i != 6; i++) {
-	    interpPoint(point1, point2, posts[i], 0, 32*(i-3)+16);
-	    interpPoint(point1, point2, leads[i], 1, 32*(i-3)+16);
+	for (i = 0; i != 3; i++) {
+	    interpPoint(point1, point2, posts[i*2], 0, -32*(i-1));
+	    interpPoint(point1, point2, leads[i*2], .45, -32*(i-1));
+	    interpPoint(point1, point2, posts[i*2+1], 1, 32*(i-1));
+	    interpPoint(point1, point2, leads[i*2+1], .55, 32*(i-1));
 	}
-	motorCenter = point2;
+	motorCenter = interpPoint(point1, point2, .5);
 	allocNodes();
     }
     int getPostCount() { return 6; }
@@ -226,7 +228,7 @@ class ThreePhaseMotorElm extends CircuitElm {
     	return true;
     }
     
-    int cr = 83;
+    int cr = 37;
     
     void draw(Graphics g) {
 
@@ -256,24 +258,44 @@ class ThreePhaseMotorElm extends CircuitElm {
 	g.fillOval(motorCenter.x-(int)(cr/2.2), motorCenter.y-(int)(cr/2.2), (int)(2*cr/2.2), (int)(2*cr/2.2));
 
 	g.setColor(cc);
-	double q = .28*1.7 * 36/dn * 83/27;
+	double q = .28*1.7 * 36/dn * 37/27;
 	final int gearRatio = 1;
-	interpPointFix(point1, point2, ps1, 1 + q*Math.cos(angleAux*gearRatio), q*Math.sin(angleAux*gearRatio));
-	interpPointFix(point1, point2, ps2, 1 - q*Math.cos(angleAux*gearRatio), -q*Math.sin(angleAux*gearRatio));
+	interpPointFix(point1, point2, ps1, .5 + q*Math.cos(angleAux*gearRatio), q*Math.sin(angleAux*gearRatio));
+	interpPointFix(point1, point2, ps2, .5 - q*Math.cos(angleAux*gearRatio), -q*Math.sin(angleAux*gearRatio));
 
 	drawThickerLine(g, ps1, ps2);
-	interpPointFix(point1, point2, ps1, 1 + q*Math.cos(angleAux*gearRatio+pi/3), q*Math.sin(angleAux*gearRatio+pi/3));
-	interpPointFix(point1, point2, ps2, 1 - q*Math.cos(angleAux*gearRatio+pi/3), -q*Math.sin(angleAux*gearRatio+pi/3));
+	interpPointFix(point1, point2, ps1, .5 + q*Math.cos(angleAux*gearRatio+pi/3), q*Math.sin(angleAux*gearRatio+pi/3));
+	interpPointFix(point1, point2, ps2, .5 - q*Math.cos(angleAux*gearRatio+pi/3), -q*Math.sin(angleAux*gearRatio+pi/3));
 
 	drawThickerLine(g, ps1, ps2);
 
-	interpPointFix(point1, point2, ps1, 1 + q*Math.cos(angleAux*gearRatio+2*pi/3), q*Math.sin(angleAux*gearRatio+2*pi/3));
-	interpPointFix(point1, point2, ps2, 1 - q*Math.cos(angleAux*gearRatio+2*pi/3), -q*Math.sin(angleAux*gearRatio+2*pi/3));
+	interpPointFix(point1, point2, ps1, .5 + q*Math.cos(angleAux*gearRatio+2*pi/3), q*Math.sin(angleAux*gearRatio+2*pi/3));
+	interpPointFix(point1, point2, ps2, .5 - q*Math.cos(angleAux*gearRatio+2*pi/3), -q*Math.sin(angleAux*gearRatio+2*pi/3));
 
 	drawThickerLine(g, ps1, ps2);
 
 	drawPosts(g);
+	
+	g.setColor(needsHighlight() ? selectColor : whiteColor);
+	g.save();
+	if (Math.abs(dy) > Math.abs(dx)) {
+	    for (i = 0; i != 3; i++) {
+		int d1 = 5;
+		g.drawString("UVW".substring(i, i+1) + "1", posts[i*2  ].x+d1, posts[i*2  ].y+8);
+		g.drawString("UVW".substring(i, i+1) + "2", posts[i*2+1].x+d1, posts[i*2+1].y-2);		
+	    }
+	} else {
+	    g.context.setTextAlign("center");
+	    for (i = 0; i != 3; i++) {
+		int d1 = 11;
+		int d2 = 7; 
+		g.drawString("UVW".substring(i, i+1) + "1", posts[i*2  ].x+d1, posts[i*2  ].y-d2);
+		g.drawString("UVW".substring(i, i+1) + "2", posts[i*2+1].x-d1, posts[i*2+1].y-d2);		
+	    }
+	}
+	g.restore();
     }
+    
     static void drawThickerLine(Graphics g, Point pa, Point pb) {
 	g.setLineWidth(6.0);
 	g.drawLine(pa.x, pa.y, pb.x, pb.y);
