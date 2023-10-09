@@ -36,10 +36,10 @@ class ThreePhaseMotorElm extends CircuitElm {
 	speed = 0;
 	Rs = new Double(st.nextToken()).doubleValue();
 	Rr = new Double(st.nextToken()).doubleValue(); 
-	Ls = 		new Double(st.nextToken()).doubleValue();
-	Lr = 		new Double(st.nextToken()).doubleValue();
-	Lm = 		new Double(st.nextToken()).doubleValue();
-	b = 		new Double(st.nextToken()).doubleValue();
+	Ls = new Double(st.nextToken()).doubleValue();
+	Lr = new Double(st.nextToken()).doubleValue();
+	Lm = new Double(st.nextToken()).doubleValue();
+	b =  new Double(st.nextToken()).doubleValue();
         voltSources = new int[2];
         curcounts = new double[3];
         coilCurrents = new double[coilCount];
@@ -55,18 +55,19 @@ class ThreePhaseMotorElm extends CircuitElm {
 
     void setPoints() {
 	super.setPoints();
-	posts = newPointArray(3);
-	leads = newPointArray(3);
-	posts[1] = point1;
-	interpPoint2(point1, point2, posts[0], posts[2], 0, 32);
-	interpPoint2(point1, point2, leads[0], leads[2], 1, 32);
-	interpPoint(point1, point2, leads[1], (dn-cr)/dn);
+	posts = newPointArray(6);
+	leads = newPointArray(6);
+	int i;
+	for (i = 0; i != 6; i++) {
+	    interpPoint(point1, point2, posts[i], 0, 32*(i-3)+16);
+	    interpPoint(point1, point2, leads[i], 1, 32*(i-3)+16);
+	}
 	motorCenter = point2;
 	allocNodes();
     }
-    int getPostCount() { return 3; }
+    int getPostCount() { return 6; }
     Point getPost(int n) { return posts[n]; }
-    int getInternalNodeCount() { return 8; }
+    int getInternalNodeCount() { return 7; }
     int getVoltageSourceCount() { return 2; }
     void reset() {
 	super.reset();
@@ -75,14 +76,13 @@ class ThreePhaseMotorElm extends CircuitElm {
         coilCurrents = new double[coilCount];
     }
 
-    final int n001_ind = 3;
-    final int n002_ind = 4;
-    final int n003_ind = 5;
-    final int n004_ind = 6;
-    final int n005_ind = 7;
-    final int n006_ind = 8;
-    final int n007_ind = 9;
-    final int nn_ind = 10;
+    final int n001_ind = 6;
+    final int n002_ind = 7;
+    final int n003_ind = 8;
+    final int n004_ind = 9;
+    final int n005_ind = 10;
+    final int n006_ind = 11;
+    final int n007_ind = 12;
     
     final double Zp = 2;
     
@@ -100,12 +100,10 @@ class ThreePhaseMotorElm extends CircuitElm {
 	int n005 = nodes[n005_ind];
 	int n006 = nodes[n006_ind];
 	int n007 = nodes[n007_ind];
-	int nn   = nodes[nn_ind];
-	sim.console("nodes " + n001 + " " + n002 + " " + n003);
 
 	sim.stampResistor(nodes[0], n001, Rs);
-	sim.stampResistor(nodes[1], n003, Rs);
-	sim.stampResistor(nodes[2], n005, Rs);
+	sim.stampResistor(nodes[2], n003, Rs);
+	sim.stampResistor(nodes[4], n005, Rs);
 	sim.stampResistor(n004, 0, 1.5*Rr);
 	sim.stampResistor(n007, 0, 1.5*Rr);
 	
@@ -155,11 +153,12 @@ class ThreePhaseMotorElm extends CircuitElm {
         
         coilCurSourceValues = new double[coilCount];
         coilCurrents = new double[coilCount];
+        
         int nodeCount = getPostCount() + getInternalNodeCount();
         nodeCurrents = new double[nodeCount];
     }
     
-    int coilNodes[] = { n001_ind, nn_ind, n003_ind, nn_ind, n005_ind, nn_ind, n002_ind, n004_ind, n006_ind, n007_ind };
+    int coilNodes[] = { n001_ind, 1, n003_ind, 3, n005_ind, 5, n002_ind, n004_ind, n006_ind, n007_ind };
     double coilCurrents[];
     double coilCurSourceValues[];
     double xformMatrix[][];
@@ -197,6 +196,8 @@ class ThreePhaseMotorElm extends CircuitElm {
     void calculateCurrent() {
         int i;
         int nodeCount = getPostCount() + getInternalNodeCount();
+        if (nodeCurrents == null)
+            return;
         for (i = 0; i != nodeCount; i++)
             nodeCurrents[i] = 0;
         for (i = 0; i != coilCount; i++) {
@@ -225,7 +226,7 @@ class ThreePhaseMotorElm extends CircuitElm {
     	return true;
     }
     
-    int cr = 37;
+    int cr = 83;
     
     void draw(Graphics g) {
 
@@ -233,11 +234,14 @@ class ThreePhaseMotorElm extends CircuitElm {
 	setBbox(point1, point2, cr);
 	
 	int i;
-	for (i = 0; i != 3; i++) {
+	for (i = 0; i != 6; i++) {
 	    setVoltageColor(g, volts[i]);
 	    drawThickLine(g, posts[i], leads[i]);
+	}
+	for (i = 0; i != 3; i++) {
 	    curcounts[i] = updateDotCount(coilCurrents[i], curcounts[i]);
-	    drawDots(g, posts[i], leads[i], curcounts[i]);
+	    drawDots(g, posts[i*2]  , leads[i*2],   curcounts[i]);
+	    drawDots(g, leads[i*2+1], posts[i*2+1], curcounts[i]);
 	}
 	
 	//getCurrent();
@@ -252,7 +256,7 @@ class ThreePhaseMotorElm extends CircuitElm {
 	g.fillOval(motorCenter.x-(int)(cr/2.2), motorCenter.y-(int)(cr/2.2), (int)(2*cr/2.2), (int)(2*cr/2.2));
 
 	g.setColor(cc);
-	double q = .28*1.7 * 36/dn * 37/27;
+	double q = .28*1.7 * 36/dn * 83/27;
 	final int gearRatio = 1;
 	interpPointFix(point1, point2, ps1, 1 + q*Math.cos(angleAux*gearRatio), q*Math.sin(angleAux*gearRatio));
 	interpPointFix(point1, point2, ps2, 1 - q*Math.cos(angleAux*gearRatio), -q*Math.sin(angleAux*gearRatio));
@@ -290,6 +294,12 @@ class ThreePhaseMotorElm extends CircuitElm {
 	arr[3] = Locale.LS("speed") + " = " + getUnitText(60*Math.abs(speed)/(2*Math.PI), Locale.LS("RPM"));
     }
     
+    double getCurrentIntoNode(int n) {
+	if (n % 2 == 1)
+	    return coilCurrents[n/2];
+	return -coilCurrents[n/2];
+    }
+
     public EditInfo getEditInfo(int n) {
 
 	if (n == 0)
