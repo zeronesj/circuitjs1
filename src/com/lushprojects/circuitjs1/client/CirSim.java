@@ -487,7 +487,8 @@ MouseOutHandler, MouseWheelHandler {
 	exportAsTextItem = iconMenuItem("export", "Export As Text...", new MyCommand("file","exportastext"));
 	fileMenuBar.addItem(exportAsTextItem);
 	fileMenuBar.addItem(iconMenuItem("export", "Export As Image...", new MyCommand("file","exportasimage")));
-	fileMenuBar.addItem(iconMenuItem("export", "Export As SVG...", new MyCommand("file","exportassvg")));
+	fileMenuBar.addItem(iconMenuItem("export", "Export As SVG...", new MyCommand("file","exportassvg")));    	
+	fileMenuBar.addItem(iconMenuItem("export", "Copy Circuit Image to Clipboard", new MyCommand("file","copypng")));
 	fileMenuBar.addItem(iconMenuItem("microchip", "Create Subcircuit...", new MyCommand("file","createsubcircuit")));
 	fileMenuBar.addItem(iconMenuItem("magic", "Find DC Operating Point", new MyCommand("file", "dcanalysis")));
 	recoverItem = iconMenuItem("back-in-time", "Recover Auto-Save", new MyCommand("file","recover"));
@@ -3267,6 +3268,8 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	if (item=="exportasimage")
 		doExportAsImage();
+    	if (item=="copypng")
+		doImageToClipboard();
     	if (item=="exportassvg")
 		doExportAsSVG();
     	if (item=="createsubcircuit")
@@ -3670,6 +3673,19 @@ MouseOutHandler, MouseWheelHandler {
     {
     	dialogShowing = new ExportAsImageDialog(CAC_IMAGE);
     	dialogShowing.show();
+    }
+
+    private static native void clipboardWriteImage(CanvasElement cv) /*-{
+	cv.toBlob(function(blob) {
+	    var promise = parent.navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+	    promise.then(function(x) { console.log(x); });
+	});
+    }-*/;
+
+    void doImageToClipboard()
+    {
+	Canvas cv = CirSim.theSim.getCircuitAsCanvas(CAC_IMAGE);
+	clipboardWriteImage(cv.getCanvasElement());
     }
     
     void doCreateSubcircuit()
