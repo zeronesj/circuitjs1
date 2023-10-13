@@ -13,6 +13,7 @@ norton.txt Norton's Theorem
 -
 >relays.txt Relays
 3motor.txt 3-Phase Motor
+motorprotect.txt Motor Protection Switch
 +A/C Circuits
 capac.txt Capacitor
 inductac.txt Inductor

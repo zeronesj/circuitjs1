@@ -1177,6 +1177,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeBlocMenuBar.addItem(getClassCheckItem(Locale.LS("Add Time Delay Relay"), "TimeDelayRelayElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(Locale.LS("Add LM317"), "CustomCompositeElm:~LM317-v2"));
     	activeBlocMenuBar.addItem(getClassCheckItem(Locale.LS("Add TL431"), "CustomCompositeElm:~TL431"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(Locale.LS("Add Motor Protection Switch"), "MotorProtectionSwitchElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(Locale.LS("Add Subcircuit Instance"), "CustomCompositeElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+Locale.LS("&nbsp;</div>Active Building Blocks")), activeBlocMenuBar);
     	
@@ -5760,6 +5761,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 425: return new RelayCoilElm(x1, y1, x2, y2, f, st);
     	case 426: return new RelayContactElm(x1, y1, x2, y2, f, st);
     	case 427: return new ThreePhaseMotorElm(x1, y1, x2, y2, f, st);
+    	case 428: return new MotorProtectionSwitchElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -6030,6 +6032,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new DelayBufferElm(x1, y1);
     	if (n=="DataInputElm")
 		return (CircuitElm) new DataInputElm(x1, y1);
+    	if (n=="MotorProtectionSwitchElm")
+		return (CircuitElm) new MotorProtectionSwitchElm(x1, y1);
     	
     	// handle CustomCompositeElm:modelname
     	if (n.startsWith("CustomCompositeElm:")) {
