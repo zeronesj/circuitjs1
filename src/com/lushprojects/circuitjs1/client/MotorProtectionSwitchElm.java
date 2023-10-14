@@ -104,7 +104,7 @@ class MotorProtectionSwitchElm extends CircuitElm {
 	void draw(Graphics g) {
 	    int i;
 	    int hs=6;
-	    setBbox(point1, point2, hs);
+	    setBbox(posts[0], posts[5], hs);
 	    g.context.save();
 	    g.context.translate(x, y);
 	    int spx = 48;
@@ -229,5 +229,11 @@ class MotorProtectionSwitchElm extends CircuitElm {
 		i2t = ei.value;
 	    if (n == 1 && ei.value > 0)
 		resistance = ei.value;
+	}
+	
+	double getCurrentIntoNode(int n) {
+	    if ((n % 2) == 1)
+		return currents[n/2];
+	    return -currents[n/2];
 	}
     }
