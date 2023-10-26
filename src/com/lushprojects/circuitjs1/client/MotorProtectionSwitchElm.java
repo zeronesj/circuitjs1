@@ -30,6 +30,7 @@ class MotorProtectionSwitchElm extends CircuitElm {
 	Point posts[], leads[];
 	double currents[], curcounts[];
 	boolean blown;
+	String label;
 	final double blownResistance = 1e9;
 	public MotorProtectionSwitchElm(int xx, int yy) {
 	    super(xx, yy);
@@ -39,6 +40,7 @@ class MotorProtectionSwitchElm extends CircuitElm {
 	    heats = new double[3];
 	    currents = new double[3];
 	    curcounts = new double[3];
+	    label = "";
 	}
 	public MotorProtectionSwitchElm(int xa, int ya, int xb, int yb, int f,
 		    StringTokenizer st) {
@@ -46,12 +48,16 @@ class MotorProtectionSwitchElm extends CircuitElm {
 	    resistance = new Double(st.nextToken()).doubleValue();
 	    i2t = new Double(st.nextToken()).doubleValue();
 	    blown = new Boolean(st.nextToken()).booleanValue();
+	    label = "";
+	    try {
+		label = CustomLogicModel.unescape(st.nextToken());
+	    } catch (Exception e) {}
 	    heats = new double[3];
 	    currents = new double[3];
 	    curcounts = new double[3];
 	}
 	String dump() {
-	    return super.dump() + " " + resistance + " " + i2t + " " + blown;
+	    return super.dump() + " " + resistance + " " + i2t + " " + blown + " " + CustomLogicModel.escape(label);
 	}
 	int getDumpType() { return 428; }
 
@@ -60,6 +66,7 @@ class MotorProtectionSwitchElm extends CircuitElm {
 	    heats = new double[3];
 	    currents = new double[3];
 	    blown = false;
+	    setSwitchPositions();
 	}
 	void setPoints() {
 	    super.setPoints();
@@ -160,6 +167,9 @@ class MotorProtectionSwitchElm extends CircuitElm {
 		g.drawLine(squareX, squareY+12*i, squareX+24, squareY+12*i);
 	    g.drawLine(squareX-spx/2, squareY+12, squareX, squareY+12);
 	    g.drawLine(squareX-spx/2, squareY, squareX-spx/2, squareY+24);
+	    g.context.setFont("normal 12px sans-serif");
+	    g.setColor(Color.white);
+	    g.drawString(label, 120, squareY+12);
 	    g.context.restore();
 	    if (!blown) {
 		for (i = 0; i != 3; i++) {
@@ -168,6 +178,8 @@ class MotorProtectionSwitchElm extends CircuitElm {
 		    drawDots(g, posts[i*2+1], leads[i*2+1], -curcounts[i]);
 		}
 	    }
+
+	    setSwitchPositions();
 	    drawPosts(g);
 	}
 
@@ -189,6 +201,7 @@ class MotorProtectionSwitchElm extends CircuitElm {
 	
 	void startIteration() {
 	    int j;
+	    boolean wasBlown = blown;
 	    for (j = 0; j != 3; j++) {
 		double i = currents[j];
 	    
@@ -205,7 +218,24 @@ class MotorProtectionSwitchElm extends CircuitElm {
 		    blown = true;
 		heats[j] = heat;
 	    }
+	    
+	    if (blown != wasBlown)
+		setSwitchPositions();
 	}
+	
+	void setSwitchPositions() {
+	    int i;
+	    int switchPosition = (blown) ? 0 : 1;
+	    for (i = 0; i != sim.elmList.size(); i++) {
+		Object o = sim.elmList.elementAt(i);
+		if (o instanceof RelayContactElm) {
+		    RelayContactElm s2 = (RelayContactElm) o;
+		    if (s2.label.equals(label))
+			s2.setPosition(switchPosition, RelayCoilElm.TYPE_NORMAL);
+		}
+	    }
+	}
+
 	void doStep() {
 	    int i;
 	    for (i = 0; i != 3; i++)
@@ -222,6 +252,11 @@ class MotorProtectionSwitchElm extends CircuitElm {
 		return new EditInfo("I2t", i2t, 0, 0);
 	    if (n == 1)
 		return new EditInfo("On Resistance", resistance, 0, 0);
+	    if (n == 2) {
+		EditInfo ei = new EditInfo("Label (for linking)", 0);
+		ei.text = label;
+		return ei;
+	    }
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
@@ -229,6 +264,8 @@ class MotorProtectionSwitchElm extends CircuitElm {
 		i2t = ei.value;
 	    if (n == 1 && ei.value > 0)
 		resistance = ei.value;
+	    if (n == 2)
+	        label = ei.textf.getText();
 	}
 	
 	double getCurrentIntoNode(int n) {
