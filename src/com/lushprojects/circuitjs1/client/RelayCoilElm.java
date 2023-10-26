@@ -31,6 +31,7 @@ class RelayCoilElm extends CircuitElm {
     Point outline[] = newPointArray(4);
     Point extraPoints[];
     double coilCurrent, coilCurCount;
+    double avgCurrent;
     
     // fractional position, between 0 and 1 inclusive
     double d_position;
@@ -225,6 +226,7 @@ class RelayCoilElm extends CircuitElm {
 	ind.reset();
 	coilCurrent = coilCurCount = 0;
 	d_position = i_position = 0;
+	avgCurrent = 0;
 
 	// preserve onState because if we don't, Relay Flip-Flop gets left in a weird state on reset.
 	// onState = false;
@@ -250,15 +252,17 @@ class RelayCoilElm extends CircuitElm {
     void startIteration() {
 	ind.startIteration(volts[nCoil1]-volts[nCoil3]);
 	double absCurrent = Math.abs(coilCurrent);
+	double a = Math.exp(-sim.timeStep*1e3);
+	avgCurrent = a*avgCurrent + (1-a)*absCurrent;
 	int oldSwitchPosition = switchPosition;
 	
 	if (state == 0) {
-	    if (absCurrent > onCurrent) {
+	    if (avgCurrent > onCurrent) {
 		lastTransition = sim.t;
 		state = 1;
 	    }
 	} else if (state == 1) {
-	    if (absCurrent < offCurrent)
+	    if (avgCurrent < offCurrent)
 		state = 0;
 	    else if (sim.t-lastTransition > switchingTimeOn) {
 		state = 2;
@@ -268,12 +272,12 @@ class RelayCoilElm extends CircuitElm {
 		    switchPosition = 1;
 	    }
 	} else if (state == 2) {
-	    if (absCurrent < offCurrent) {
+	    if (avgCurrent < offCurrent) {
 		lastTransition = sim.t;
 		state = 3;
 	    }
 	} else if (state == 3) {
-	    if (absCurrent > onCurrent) 
+	    if (avgCurrent > onCurrent) 
 		state = 2;
 	    else if (sim.t-lastTransition > switchingTimeOff) {
 		state = 0;
