@@ -488,7 +488,6 @@ MouseOutHandler, MouseWheelHandler {
 	fileMenuBar.addItem(exportAsTextItem);
 	fileMenuBar.addItem(iconMenuItem("export", "Export As Image...", new MyCommand("file","exportasimage")));
 	fileMenuBar.addItem(iconMenuItem("export", "Export As SVG...", new MyCommand("file","exportassvg")));    	
-	fileMenuBar.addItem(iconMenuItem("export", "Copy Circuit Image to Clipboard", new MyCommand("file","copypng")));
 	fileMenuBar.addItem(iconMenuItem("microchip", "Create Subcircuit...", new MyCommand("file","createsubcircuit")));
 	fileMenuBar.addItem(iconMenuItem("magic", "Find DC Operating Point", new MyCommand("file", "dcanalysis")));
 	recoverItem = iconMenuItem("back-in-time", "Recover Auto-Save", new MyCommand("file","recover"));
@@ -547,7 +546,7 @@ MouseOutHandler, MouseWheelHandler {
 	m.addItem(selectAllItem = menuItemWithShortcut("select-all", "Select All", Locale.LS(ctrlMetaKey + "A"), new MyCommand("edit","selectAll")));
 	m.addSeparator();
 	m.addItem(menuItemWithShortcut("search", "Find Component...", "/", new MyCommand("edit", "search")));
-	m.addItem(iconMenuItem("target", weAreInUS(false) ? "Center Circuit" : "Centre Circuit", new MyCommand("edit", "centrecircuit")));
+	m.addItem(menuItemWithShortcut("target", weAreInUS(false) ? "Center Circuit" : "Centre Circuit", "Space", new MyCommand("edit", "centrecircuit")));
 	m.addItem(menuItemWithShortcut("zoom-11", "Zoom 100%", "0", new MyCommand("zoom", "zoom100")));
 	m.addItem(menuItemWithShortcut("zoom-in", "Zoom In", "+", new MyCommand("zoom", "zoomin")));
 	m.addItem(menuItemWithShortcut("zoom-out", "Zoom Out", "-", new MyCommand("zoom", "zoomout")));
@@ -1242,7 +1241,8 @@ MouseOutHandler, MouseWheelHandler {
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+Locale.LS("&nbsp;</div>Drag")), otherMenuBar);
 
     	mainMenuBar.addItem(mi=getClassCheckItem(Locale.LS("Select/Drag Sel"), "Select"));
-    	mi.setShortcut(Locale.LS("(space or Shift-drag)"));
+    	mi.setShortcut(Locale.LS("(ESC or Shift-drag)"));
+	mainMenuBar.addItem(iconMenuItem("export", "Copy Circuit Image to Clipboard", new MyCommand("file","copypng")));
     }
     
     void composeSubcircuitMenu() {
@@ -3269,8 +3269,11 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	if (item=="exportasimage")
 		doExportAsImage();
-    	if (item=="copypng")
+    	if (item=="copypng") {
 		doImageToClipboard();
+    		if (contextPanel!=null)
+			contextPanel.hide();
+    	}
     	if (item=="exportassvg")
 		doExportAsSVG();
     	if (item=="createsubcircuit")
@@ -5481,10 +5484,8 @@ MouseOutHandler, MouseWheelHandler {
     			tempMouseMode = mouseMode;
     		}
     		if (cc==32) {
-			    setMouseMode(MODE_SELECT);
-			    mouseModeStr = "Select";
-			    tempMouseMode = mouseMode;
-			    e.cancel();    			
+			menuPerformed("key", "centrecircuit");
+			e.cancel();
     		}
     	}
     }
