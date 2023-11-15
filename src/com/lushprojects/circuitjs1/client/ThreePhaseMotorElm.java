@@ -115,7 +115,8 @@ class ThreePhaseMotorElm extends CircuitElm {
 	sim.stampResistor(n004, 0, 1.5*Rr);
 	sim.stampResistor(n007, 0, 1.5*Rr);
 	
-	double coilInductances[] = { Ls, Ls, Ls, 1.5*Lr, 1.5*Lr };
+	double Lr2 = Lr*1.5;
+	double coilInductances[] = { Ls, Ls, Ls, Lr2, Lr2 };
 	double couplingCoefs[][] = new double[coilCount][coilCount];
         xformMatrix = new double[coilCount][coilCount];
 
@@ -125,11 +126,12 @@ class ThreePhaseMotorElm extends CircuitElm {
         for (i = 0; i != coilCount; i++)
             xformMatrix[i][i] = coilInductances[i];
         
-        couplingCoefs[0][3] = couplingCoefs[3][0] = Lm/Math.sqrt(Ls*1.5*Lr);
-        couplingCoefs[1][3] = couplingCoefs[3][1] = -Lm/(2*Math.sqrt(Ls*1.5*Lr));
-        couplingCoefs[1][4] = couplingCoefs[4][1] = Math.sqrt(3)*Lm/(2*Math.sqrt(Ls*1.5*Lr));
-        couplingCoefs[2][3] = couplingCoefs[3][2] = -Lm/(2*Math.sqrt(Ls*1.5*Lr));
-        couplingCoefs[2][4] = couplingCoefs[4][2] = -Math.sqrt(3)*Lm/(2*Math.sqrt(Ls*1.5*Lr));
+	double k0 = Lm/Math.sqrt(Ls*Lr2);
+        couplingCoefs[0][3] = couplingCoefs[3][0] = k0;
+        couplingCoefs[1][3] = couplingCoefs[3][1] = -k0/2;
+        couplingCoefs[1][4] = couplingCoefs[4][1] = k0*Math.sqrt(3)/2;
+        couplingCoefs[2][3] = couplingCoefs[3][2] = -k0/2;
+        couplingCoefs[2][4] = couplingCoefs[4][2] = -k0*Math.sqrt(3)/2;
                 
         int j;
         // fill off-diagonal
@@ -174,6 +176,7 @@ class ThreePhaseMotorElm extends CircuitElm {
     int voltSources[];
     
     void setVoltageSource(int n, int v) { voltSources[n] = v; }
+	double q1, q2, qt;
     
     void startIteration() {
         int i;
@@ -182,14 +185,15 @@ class ThreePhaseMotorElm extends CircuitElm {
             coilCurSourceValues[i] = val;
         }
         
-        double torque = Zp * Math.sqrt(3)/2 * Lm * (coilCurrents[1]-coilCurrents[2]) * coilCurrents[3] - Math.sqrt(3) * coilCurrents[0] * coilCurrents[4];
+        double torque = Zp * Math.sqrt(3)/2 * Lm * ((coilCurrents[1]-coilCurrents[2]) * coilCurrents[3] - Math.sqrt(3) * coilCurrents[0] * coilCurrents[4]);
+        qt = torque;
 	speed += sim.timeStep * (torque/J - b * speed);
-        angle= angle + speed*sim.timeStep;
+        angle = angle + speed*sim.timeStep;
 
 	int n002 = nodes[n002_ind];
 	int n006 = nodes[n006_ind];
-        sim.updateVoltageSource(n002, 0, voltSources[0], -Zp*speed*(Lm*Math.sqrt(3)/2 * (coilCurrents[1]-coilCurrents[2]) + 1.5*Lr*coilCurrents[4]));
-        sim.updateVoltageSource(n006, 0, voltSources[1], Zp*speed*(3/2.*Lm*coilCurrents[0] + 1.5*Lr*coilCurrents[3]));
+        sim.updateVoltageSource(n002, 0, voltSources[0], q1= -Zp*speed*(Lm*Math.sqrt(3)/2 * (coilCurrents[1]-coilCurrents[2]) + 1.5*Lr*coilCurrents[4]));
+        sim.updateVoltageSource(n006, 0, voltSources[1], q2= Zp*speed*(3/2.*Lm*coilCurrents[0] + 1.5*Lr*coilCurrents[3]));
     }
     
     void doStep() {
@@ -320,6 +324,9 @@ class ThreePhaseMotorElm extends CircuitElm {
 	arr[0] = "3-Phase Motor";
 	getBasicInfo(arr);
 	arr[3] = Locale.LS("speed") + " = " + getUnitText(60*Math.abs(speed)/(2*Math.PI), Locale.LS("RPM"));
+	arr[4] = "q1 = " + q1;
+	arr[5] = "q2 = " + q2;
+	arr[6] = "qt = " + qt;
     }
     
     double getCurrentIntoNode(int n) {
