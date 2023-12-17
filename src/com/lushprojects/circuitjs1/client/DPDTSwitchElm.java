@@ -1,0 +1,179 @@
+/*    
+    Copyright (C) Paul Falstad and Iain Sharp
+    
+    This file is part of CircuitJS1.
+
+    CircuitJS1 is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    CircuitJS1 is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with CircuitJS1.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+package com.lushprojects.circuitjs1.client;
+
+    class DPDTSwitchElm extends SwitchElm {
+	int poleCount;
+	
+	public DPDTSwitchElm(int xx, int yy) {
+	    super(xx, yy, false);
+	    noDiagonal = true;
+	    poleCount = 2;
+	}
+	DPDTSwitchElm(int xx, int yy, boolean mm) {
+	    super(xx, yy, mm);
+	    noDiagonal = true;
+	    poleCount = 2;
+	}
+	public DPDTSwitchElm(int xa, int ya, int xb, int yb, int f,
+			  StringTokenizer st) {
+	    super(xa, ya, xb, yb, f, st);
+	    try {
+		poleCount = new Integer(st.nextToken()).intValue();
+	    } catch (Exception e) { }
+	    noDiagonal = true;
+	}
+	int getDumpType() { return 429; }
+	String dump() {
+	    return super.dump() + " " + poleCount;
+	}
+
+	final int openhs = 16;
+	final int posCount = 2;
+	Point poleLeads[], throwLeads[], polePosts[], throwPosts[], linePoints[];
+        int voltageSources[];
+
+	void setPoints() {
+	    super.setPoints();
+	    calcLeads(32);
+	    voltageSources = new int[poleCount];
+	    throwPosts = newPointArray(2*poleCount);
+	    throwLeads = newPointArray(2*poleCount);
+	    poleLeads = newPointArray(poleCount);
+	    polePosts = newPointArray(poleCount);
+	    linePoints = newPointArray(2);
+	    int i;
+	    for (i = 0; i != poleCount; i++) {
+		int offset = -i*openhs*3;
+		interpPoint(point1, point2, polePosts[i], 0, offset);
+		interpPoint(lead1,  lead2,  poleLeads[i], 0, offset);
+		interpPoint(point1, point2, throwPosts[i*2  ], 1, offset-openhs);
+		interpPoint(lead1,  lead2,  throwLeads[i*2  ], 1, offset-openhs);
+		interpPoint(point1, point2, throwPosts[i*2+1], 1, offset+openhs);
+		interpPoint(lead1,  lead2,  throwLeads[i*2+1], 1, offset+openhs);
+	    }
+	}
+	
+	void draw(Graphics g) {
+	    setBbox(point1, point2, 1);
+	    adjustBbox(throwPosts[1], throwPosts[poleCount*2-2]);
+
+	    int i;
+	    for (i = 0; i != poleCount; i++) {
+		setVoltageColor(g, volts[i*3]);
+		drawThickLine(g, polePosts[i],      poleLeads[i]);
+		setVoltageColor(g, volts[i*3+1]);
+		drawThickLine(g, throwPosts[i*2  ], throwLeads[i*2  ]);
+		setVoltageColor(g, volts[i*3+2]);
+		drawThickLine(g, throwPosts[i*2+1], throwLeads[i*2+1]);
+		
+	        // draw line
+		if (!needsHighlight())
+		    g.setColor(Color.lightGray);
+		
+	        if (i < poleCount-1) {
+	            int offset = -i*openhs*3;
+	            interpPoint(point1, point2, linePoints[0], .5, offset-openhs*(.5-position));
+	            interpPoint(point1, point2, linePoints[1], .5, offset-openhs*3-openhs*(.5-position));
+	            g.setLineDash(4, 4);
+	            g.drawLine(linePoints[0], linePoints[1]);
+	            g.setLineDash(0,  0);
+	        }
+		
+		// draw switch
+		if (!needsHighlight())
+		    g.setColor(whiteColor);
+		drawThickLine(g, poleLeads[i], throwLeads[i*2+position]);
+	    }
+	    
+	    updateDotCount();
+//	    drawDots(g, point1, lead1, curcount);
+	    drawPosts(g);
+	}
+	
+	double getCurrentIntoNode(int n) {
+	    if (n == 0)
+		return -current;
+	    if (n == position+1)
+		return current;
+	    return 0;
+	}
+
+	Rectangle getSwitchRect() {
+	    return new Rectangle(poleLeads[0]).union(new Rectangle(throwLeads[1])).union(new Rectangle(throwLeads[poleCount*2-2]));
+	}	
+
+	Point getPost(int n) {
+	    int t = n/3;
+	    int n3 = n % 3;
+	    if (n3 == 0)
+		return polePosts[t];
+	    return throwPosts[t*2+n3-1];
+	}
+	int getPostCount() { return 3*poleCount; }
+	void calculateCurrent() {
+	}
+	
+        void setVoltageSource(int j, int vs) {
+            voltageSources[j] = vs;
+        }
+
+	void stamp() {
+	    int i;
+	    for (i = 0; i != poleCount; i++)
+		sim.stampVoltageSource(nodes[i*3], nodes[position+1+i*3], voltageSources[i], 0);
+	}
+		
+	int getVoltageSourceCount() {
+	    return poleCount;
+	}
+	
+	boolean getConnection(int n1, int n2) {
+	    return comparePair(n1, n2, 0, 1+position);
+	}
+	
+	boolean isWireEquivalent() { return true; }
+	
+	// optimizing out this element is too complicated to be worth it (see #646)
+	boolean isRemovableWire() { return false; }
+
+	/*
+	void getInfo(String arr[]) {
+	    arr[0] = "switch (" + (link == 0 ? "S" : "D") + "P" +
+		    ((throwCount > 2) ? throwCount+"T)" : "DT)");
+	    arr[1] = "I = " + getCurrentDText(getCurrent());
+	}
+	*/
+	public EditInfo getEditInfo(int n) {
+	    if (n == 0)
+	    	return new EditInfo("# of Poles", poleCount, 2, 10).setDimensionless();
+	    return null;
+	}
+	public void setEditValue(int n, EditInfo ei) {
+	    if (n == 0 && ei.value >= 2) {
+		poleCount = (int) ei.value;
+		allocNodes();
+		setPoints();
+	    }
+	}
+	
+	int getShortcut() { return 0; }
+
+    }
