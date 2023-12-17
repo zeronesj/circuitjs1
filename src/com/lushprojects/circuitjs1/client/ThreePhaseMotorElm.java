@@ -343,7 +343,7 @@ class ThreePhaseMotorElm extends CircuitElm {
 	if (n == 1)
 	    return new EditInfo("Rotor Inductance (H)", Lr, 0, 0);
 	if (n == 2)
-	    return new EditInfo("Magnetizing Inductance (H)", Lm, 0, 0);
+	    return new EditInfo("Coupling Coefficient", Lm/Math.sqrt(Ls*Lr), 0, 0).setDimensionless();
 	if (n == 3)
 	    return new EditInfo("Stator Resistance (ohms)", Rs, 0, 0);
 	if (n == 4)
@@ -360,8 +360,8 @@ class ThreePhaseMotorElm extends CircuitElm {
 	    Ls = ei.value;
 	if (ei.value > 0 && n==1)
 	    Lr = ei.value;
-	if (ei.value > 0 && n==2)
-	    Lm = ei.value;
+	if (ei.value > 0 && ei.value < 1 && n==2)
+	    Lm = ei.value*Math.sqrt(Ls*Lr);
 	if (ei.value > 0 && n==3)
 	    Rs = ei.value;
 	if (ei.value > 0 && n==4)
