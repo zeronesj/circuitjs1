@@ -26,7 +26,7 @@ class ThreePhaseMotorElm extends CircuitElm {
 	Lr = .0297;
 	Lm = .0287;
 	J = 1;
-	angle = pi/2; speed = 0;
+	angle = pi/2; speed = filteredSpeed = 0;
 	b= 0.05;
         voltSources = new int[2];
         curcounts = new double[3];
@@ -35,7 +35,7 @@ class ThreePhaseMotorElm extends CircuitElm {
     public ThreePhaseMotorElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st) {
 	super(xa, ya, xb, yb, f);
 	angle = pi/2;
-	speed = 0;
+	filteredSpeed = speed = 0;
 	Rs = new Double(st.nextToken()).doubleValue();
 	Rr = new Double(st.nextToken()).doubleValue(); 
 	Ls = new Double(st.nextToken()).doubleValue();
@@ -79,7 +79,7 @@ class ThreePhaseMotorElm extends CircuitElm {
     int getVoltageSourceCount() { return 2; }
     void reset() {
 	super.reset();
-	speed = 0;
+	filteredSpeed = speed = 0;
         coilCurSourceValues = new double[coilCount];
         coilCurrents = new double[coilCount];
     }
@@ -241,6 +241,7 @@ class ThreePhaseMotorElm extends CircuitElm {
     }
     
     int cr = 37;
+    double filteredSpeed;
     
     void draw(Graphics g) {
 
@@ -306,6 +307,7 @@ class ThreePhaseMotorElm extends CircuitElm {
 	    }
 	}
 	g.restore();
+	filteredSpeed = filteredSpeed*.98 + speed*.02;
     }
     
     static void drawThickerLine(Graphics g, Point pa, Point pb) {
@@ -325,7 +327,7 @@ class ThreePhaseMotorElm extends CircuitElm {
     void getInfo(String arr[]) {
 	arr[0] = "3-Phase Motor";
 	getBasicInfo(arr);
-	arr[3] = Locale.LS("speed") + " = " + getUnitText(60*Math.abs(speed)/(2*Math.PI), Locale.LS("RPM"));
+	arr[3] = Locale.LS("speed") + " = " + getUnitText(60*Math.abs(filteredSpeed)/(2*Math.PI), Locale.LS("RPM"));
     }
     
     double getCurrentIntoNode(int n) {
@@ -364,7 +366,7 @@ class ThreePhaseMotorElm extends CircuitElm {
 	    Rs = ei.value;
 	if (ei.value > 0 && n==4)
 	    Rr = ei.value;
-	if (ei.value > 0 && n==5)
+	if (n==5)
 	    b = ei.value;
 	if (ei.value > 0 && n==6)
 	    J = ei.value;
