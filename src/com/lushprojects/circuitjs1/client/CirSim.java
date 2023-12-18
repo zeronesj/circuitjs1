@@ -1075,6 +1075,7 @@ MouseOutHandler, MouseWheelHandler {
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Push Switch"), "PushSwitchElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add SPDT Switch"), "Switch2Elm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add DPDT Switch"), "DPDTSwitchElm"));
+    	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Cross Switch"), "CrossSwitchElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Make-Before-Break Switch"), "MBBSwitchElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Potentiometer"), "PotElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Transformer"), "TransformerElm"));
@@ -5765,6 +5766,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 427: return new ThreePhaseMotorElm(x1, y1, x2, y2, f, st);
     	case 428: return new MotorProtectionSwitchElm(x1, y1, x2, y2, f, st);
     	case 429: return new DPDTSwitchElm(x1, y1, x2, y2, f, st);
+    	case 430: return new CrossSwitchElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -6039,6 +6041,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new MotorProtectionSwitchElm(x1, y1);
     	if (n=="DPDTSwitchElm")
 		return (CircuitElm) new DPDTSwitchElm(x1, y1);
+    	if (n=="CrossSwitchElm")
+		return (CircuitElm) new CrossSwitchElm(x1, y1);
     	
     	// handle CustomCompositeElm:modelname
     	if (n.startsWith("CustomCompositeElm:")) {

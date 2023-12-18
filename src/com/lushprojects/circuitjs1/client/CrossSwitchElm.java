@@ -19,35 +19,28 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class DPDTSwitchElm extends SwitchElm {
-	int poleCount;
+    class CrossSwitchElm extends SwitchElm {
+	final int poleCount = 2;
 	
-	public DPDTSwitchElm(int xx, int yy) {
+	public CrossSwitchElm(int xx, int yy) {
 	    super(xx, yy, false);
 	    noDiagonal = true;
-	    poleCount = 2;
 	}
-	DPDTSwitchElm(int xx, int yy, boolean mm) {
+	CrossSwitchElm(int xx, int yy, boolean mm) {
 	    super(xx, yy, mm);
 	    noDiagonal = true;
-	    poleCount = 2;
 	}
-	public DPDTSwitchElm(int xa, int ya, int xb, int yb, int f,
+	public CrossSwitchElm(int xa, int ya, int xb, int yb, int f,
 			  StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
-	    try {
-		poleCount = new Integer(st.nextToken()).intValue();
-	    } catch (Exception e) { }
 	    noDiagonal = true;
 	}
-	int getDumpType() { return 429; }
-	String dump() {
-	    return super.dump() + " " + poleCount;
-	}
+	int getDumpType() { return 430; }
 
 	final int openhs = 16;
 	final int posCount = 2;
 	Point poleLeads[], throwLeads[], polePosts[], throwPosts[], linePoints[];
+	Point crossPoints[];
         int voltageSources[];
         double currents[], curcounts[];
 
@@ -60,6 +53,7 @@ package com.lushprojects.circuitjs1.client;
 	    poleLeads = newPointArray(poleCount);
 	    polePosts = newPointArray(poleCount);
 	    linePoints = newPointArray(2);
+	    crossPoints = newPointArray(6);
 	    currents = new double[poleCount];
 	    curcounts = new double[poleCount];
 	    int i;
@@ -74,20 +68,38 @@ package com.lushprojects.circuitjs1.client;
 		interpPoint(lead1,  lead2,  throwLeads[i*4+2], 1, offset+openhs*.33);
 		interpPoint(lead1,  lead2,  throwLeads[i*4+3], 1.2, offset-openhs*.33);
 	    }
+	    double dp = 16/dn;
+	    interpPoint(point1, point2, crossPoints[0], 1+dp  , openhs);
+	    interpPoint(point1, point2, crossPoints[1], 1+dp*2, openhs);
+	    interpPoint(point1, point2, crossPoints[2], 1+dp*3, openhs);
+	    interpPoint(point1, point2, crossPoints[3], 1+dp*2, -openhs);
+	    interpPoint(point1, point2, crossPoints[4], 1+dp  , -openhs*4);
+	    interpPoint(point1, point2, crossPoints[5], 1+dp*3, -openhs*4);
 	}
 	
 	void draw(Graphics g) {
 	    setBbox(point1, point2, 1);
-	    adjustBbox(throwPosts[1], throwPosts[poleCount*2-2]);
+	    adjustBbox(crossPoints[2], crossPoints[5]);
 
 	    int i;
+
+	    setVoltageColor(g, volts[1]);
+	    drawThickLine(g, crossPoints[1], crossPoints[2]);
+	    drawThickLine(g, crossPoints[1], crossPoints[3]);
+	    drawThickLine(g, crossPoints[3], throwPosts[0]);
+	    drawThickLine(g, throwPosts[0], throwPosts[3]);
+	    setVoltageColor(g, volts[3]);
+	    drawThickLine(g, throwPosts[2], crossPoints[5]);
+	    drawThickLine(g, throwPosts[1], crossPoints[0]);
+	    drawThickLine(g, crossPoints[0], crossPoints[4]);
+		
 	    for (i = 0; i != poleCount; i++) {
-		setVoltageColor(g, volts[i*3]);
+		setVoltageColor(g, volts[i*2]);
 		drawThickLine(g, polePosts[i],      poleLeads[i]);
-		setVoltageColor(g, volts[i*3+1]);
-		drawThickLine(g, throwPosts[i*2  ], throwLeads[i*4  ]);
+		setVoltageColor(g, volts[i*2+1]);
 		drawThickLine(g, throwLeads[i*4  ], throwLeads[i*4+2]);
-		setVoltageColor(g, volts[i*3+2]);
+		drawThickLine(g, throwPosts[i*2  ], throwLeads[i*4  ]);
+		setVoltageColor(g, volts[3-i*2]);
 		drawThickLine(g, throwPosts[i*2+1], throwLeads[i*4+1]);
 		
 	        // draw line
@@ -96,8 +108,9 @@ package com.lushprojects.circuitjs1.client;
 		
 	        if (i < poleCount-1) {
 	            int offset = -i*openhs*3;
-	            interpPoint(point1, point2, linePoints[0], .5, offset-openhs*(.5-position)-4*position); // top
-	            interpPoint(point1, point2, linePoints[1], .5, offset-openhs*3-openhs*(.5-position)+3+8*(1-position));
+	            int adj = position*-3;
+	            interpPoint(point1, point2, linePoints[0], .5, offset-openhs*(.5-position)+adj);
+	            interpPoint(point1, point2, linePoints[1], .5, offset-openhs*3-openhs*(.5-position)+7+adj);
 	            g.setLineDash(4, 4);
 	            g.drawLine(linePoints[0], linePoints[1]);
 	            g.setLineDash(0,  0);
@@ -112,19 +125,31 @@ package com.lushprojects.circuitjs1.client;
 		curcounts[i] = updateDotCount(currents[i], curcounts[i]);
 		drawDots(g, polePosts[i], poleLeads[i], curcounts[i]);
 		drawDots(g, throwLeads[i*4+position], throwPosts[i*2+position], curcounts[i]);
+		if (i == 1 && position == 0)
+		    drawDots(g, throwPosts[2], crossPoints[5], curcounts[1]);
+		if (i == 0 && position == 1) {
+		    drawDots(g, throwPosts[1], crossPoints[0], curcounts[0]);
+		    drawDots(g, crossPoints[0], crossPoints[4], curcounts[0]);
+		    drawDots(g, crossPoints[4], crossPoints[5], curcounts[0]);
+		}
+		if (i == 1 && position == 1)
+		    drawDots(g, throwPosts[3], throwPosts[0], curcounts[1]);
+		drawDots(g, throwPosts[0], crossPoints[3], curcounts[position]);
+		drawDots(g, crossPoints[3], crossPoints[1], curcounts[position]);
+		drawDots(g, crossPoints[1], crossPoints[2], curcounts[position]);
 	    }
 	    
 	    drawPosts(g);
+	    drawPost(g, throwPosts[0]);
+	    drawPost(g, crossPoints[4]);
 	}
 	
 	double getCurrentIntoNode(int n) {
-	    int t = n/3;
-	    int n3 = n % 3;
-	    if (n3 == 0)
-		return -currents[t];
-	    if (n3 == position+1)
-		return currents[t];
-	    return 0;
+	    if (n == 0 || n == 2)
+		return -currents[n/2];
+	    if (position == 0)
+		return currents[n/2];
+	    return currents[1-n/2];
 	}
 
 	void setCurrent(int vn, double c) {
@@ -133,18 +158,19 @@ package com.lushprojects.circuitjs1.client;
 	    else
 		currents[1] = c;
 	}
+	
 	Rectangle getSwitchRect() {
 	    return new Rectangle(poleLeads[0]).union(new Rectangle(throwLeads[1])).union(new Rectangle(throwLeads[poleCount*4-4]));
 	}	
 
 	Point getPost(int n) {
-	    int t = n/3;
-	    int n3 = n % 3;
-	    if (n3 == 0)
-		return polePosts[t];
-	    return throwPosts[t*2+n3-1];
+	    if (n == 0 || n == 2)
+		return polePosts[n/2];
+	    if (n == 1)
+		return crossPoints[2];
+	    return crossPoints[5];
 	}
-	int getPostCount() { return 3*poleCount; }
+	int getPostCount() { return 2*poleCount; }
 	void calculateCurrent() {
 	}
 	
@@ -154,8 +180,13 @@ package com.lushprojects.circuitjs1.client;
 
 	void stamp() {
 	    int i;
-	    for (i = 0; i != poleCount; i++)
-		sim.stampVoltageSource(nodes[i*3], nodes[position+1+i*3], voltageSources[i], 0);
+	    if (position == 0) {
+		for (i = 0; i != poleCount; i++)
+		    sim.stampVoltageSource(nodes[i*2], nodes[i*2+1], voltageSources[i], 0);
+	    } else {		
+		for (i = 0; i != poleCount; i++)
+		    sim.stampVoltageSource(nodes[i*2], nodes[3-i*2], voltageSources[i], 0);
+	    }
 	}
 		
 	int getVoltageSourceCount() {
@@ -163,7 +194,10 @@ package com.lushprojects.circuitjs1.client;
 	}
 	
 	boolean getConnection(int n1, int n2) {
-	    return comparePair(n1, n2, 0, 1+position);
+	    if (position == 0)
+		return comparePair(n1, n2, 0, 1) || comparePair(n1, n2, 2, 3);
+	    else
+		return comparePair(n1, n2, 0, 3) || comparePair(n1, n2, 2, 1);
 	}
 	
 	boolean isWireEquivalent() { return true; }
@@ -172,25 +206,16 @@ package com.lushprojects.circuitjs1.client;
 	boolean isRemovableWire() { return false; }
 
 	void getInfo(String arr[]) {
-	    arr[0] = (poleCount == 2) ? "switch (DPDT)" : "switch (" + poleCount + "PDT)";
+	    arr[0] = "cross switch";
 	    int i;
 	    for (i = 0; i != poleCount; i++)
 		arr[i+1] = "I" + (i+1) + " = " + getCurrentDText(currents[i]);
 	}
 	
+	int getShortcut() { return 0; }
+
 	public EditInfo getEditInfo(int n) {
-	    if (n == 0)
-	    	return new EditInfo("# of Poles", poleCount, 2, 10).setDimensionless();
 	    return null;
 	}
-	public void setEditValue(int n, EditInfo ei) {
-	    if (n == 0 && ei.value >= 2) {
-		poleCount = (int) ei.value;
-		allocNodes();
-		setPoints();
-	    }
-	}
-	
-	int getShortcut() { return 0; }
 
     }
