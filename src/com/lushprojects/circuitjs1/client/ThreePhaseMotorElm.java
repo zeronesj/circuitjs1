@@ -334,27 +334,27 @@ class ThreePhaseMotorElm extends CircuitElm {
     
     private static String getUnitTextRPM(double v, String u) {
         String sp = " ";
-        boolean sf = true;
+        NumberFormat nf = NumberFormat.getFormat("####.##");
         double va = Math.abs(v);
         if (va < 1e-14)
             // this used to return null, but then wires would display "null" with 0V
             return "0" + sp + u;
         if (va < 1e-9)
-            return format(v*1e12, sf) + sp + "p" + u;
+            return nf.format(v*1e12) + sp + "p" + u;
         if (va < 1e-6)
-            return format(v*1e9, sf) + sp + "n" + u;
+            return nf.format(v*1e9) + sp + "n" + u;
         if (va < 1e-3)
-            return format(v*1e6, sf) + sp + Locale.muString + u;
+            return nf.format(v*1e6) + sp + Locale.muString + u;
         if (va < 1)
-            return format(v*1e3, sf) + sp + "m" + u;
+            return nf.format(v*1e3) + sp + "m" + u;
         if (va < 1e3)
-            return format(v, sf) + sp + u;
+            return nf.format(v) + sp + u;
         if (va < 1e6)
-            return format(v*1e-3, sf) + sp + "k" + u;
+            return nf.format(v*1e-3) + sp + "k" + u;
         if (va < 1e9)
-            return format(v*1e-6, sf) + sp + "M" + u;
+            return nf.format(v*1e-6) + sp + "M" + u;
         if (va < 1e12)
-            return format(v*1e-9, sf) + sp + "G" + u;
+            return nf.format(v*1e-9) + sp + "G" + u;
         return NumberFormat.getFormat("#.##E000").format(v) + sp + u;
     }
 
