@@ -1,5 +1,7 @@
 package com.lushprojects.circuitjs1.client;
 
+import com.google.gwt.i18n.client.NumberFormat;
+
 import com.lushprojects.circuitjs1.client.util.Locale;
 
 // based on https://ctms.engin.umich.edu/CTMS/index.php?example=MotorPosition&section=SystemModeling
@@ -327,9 +329,35 @@ class ThreePhaseMotorElm extends CircuitElm {
     void getInfo(String arr[]) {
 	arr[0] = "3-Phase Motor";
 	getBasicInfo(arr);
-	arr[3] = Locale.LS("speed") + " = " + getUnitText(60*Math.abs(filteredSpeed)/(2*Math.PI), Locale.LS("RPM"));
+	arr[3] = Locale.LS("speed") + " = " + getUnitTextRPM(60*Math.abs(filteredSpeed)/(2*Math.PI), Locale.LS("RPM"));
     }
     
+    private static String getUnitTextRPM(double v, String u) {
+        String sp = " ";
+        boolean sf = true;
+        double va = Math.abs(v);
+        if (va < 1e-14)
+            // this used to return null, but then wires would display "null" with 0V
+            return "0" + sp + u;
+        if (va < 1e-9)
+            return format(v*1e12, sf) + sp + "p" + u;
+        if (va < 1e-6)
+            return format(v*1e9, sf) + sp + "n" + u;
+        if (va < 1e-3)
+            return format(v*1e6, sf) + sp + Locale.muString + u;
+        if (va < 1)
+            return format(v*1e3, sf) + sp + "m" + u;
+        if (va < 1e3)
+            return format(v, sf) + sp + u;
+        if (va < 1e6)
+            return format(v*1e-3, sf) + sp + "k" + u;
+        if (va < 1e9)
+            return format(v*1e-6, sf) + sp + "M" + u;
+        if (va < 1e12)
+            return format(v*1e-9, sf) + sp + "G" + u;
+        return NumberFormat.getFormat("#.##E000").format(v) + sp + u;
+    }
+
     double getCurrentIntoNode(int n) {
 	if (n % 2 == 1)
 	    return coilCurrents[n/2];
