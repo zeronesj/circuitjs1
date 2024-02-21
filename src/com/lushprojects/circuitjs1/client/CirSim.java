@@ -214,6 +214,7 @@ MouseOutHandler, MouseWheelHandler {
     // incremented each time we advance t by maxTimeStep
     int timeStepCount;
 
+    double minFrameRate = 20;
     boolean adjustTimeStep;
     boolean developerMode;
     static final int HINT_LC = 1;
@@ -2952,6 +2953,8 @@ MouseOutHandler, MouseWheelHandler {
 	// keep track of iterations completed without convergence issues
 	int goodIterations = 100;
 	
+	int frameTimeLimit = (int) (1000/minFrameRate);
+	
 	for (iter = 1; ; iter++) {
 	    if (goodIterations >= 3 && timeStep < maxTimeStep) {
 		// things are going well, double the time step
@@ -3069,8 +3072,8 @@ MouseOutHandler, MouseWheelHandler {
 	    tm = System.currentTimeMillis();
 	    lit = tm;
 	    // Check whether enough time has elapsed to perform an *additional* iteration after
-	    // those we have already completed.  But limit total computation time to 500ms (2fps)
-	    if ((timeStepCount-timeStepCountAtFrameStart)*1000 >= steprate*(tm-lastIterTime) || (tm-lastFrameTime > 500))
+	    // those we have already completed.  But limit total computation time to 50ms (20fps) by default
+	    if ((timeStepCount-timeStepCountAtFrameStart)*1000 >= steprate*(tm-lastIterTime) || (tm-lastFrameTime > frameTimeLimit))
 		break;
 	    if (!simRunning)
 		break;
