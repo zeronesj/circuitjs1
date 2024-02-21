@@ -96,18 +96,17 @@ class TimerElm extends ChipElm {
     boolean triggerSuppressed;
     
     void startIteration() {
-	out = volts[N_OUT] > volts[N_VCC]/2;
+	double groundVolts = hasGroundPin() ? volts[N_GND] : 0;	
+	out = volts[N_OUT] > (volts[N_VCC]+groundVolts)/2;
 	// check comparators
 	if (volts[N_THRES] > volts[N_CTL])
 	    out = false;
 	
 	// trigger overrides threshold
 	// (save triggered flag in case reset and trigger pins are tied together)
-	boolean triggered = (volts[N_CTL]/2 > volts[N_TRIG]);
+	boolean triggered = ((volts[N_CTL]+groundVolts)/2 > volts[N_TRIG]);
 	if (triggered || triggerSuppressed)
 	    out = true;
-	
-	double groundVolts = hasGroundPin() ? volts[N_GND] : 0;
 	
 	// reset overrides trigger
 	if (hasReset() && volts[N_RST] < .7+groundVolts) {
