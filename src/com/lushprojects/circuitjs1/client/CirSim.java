@@ -3788,7 +3788,7 @@ MouseOutHandler, MouseWheelHandler {
     				break;
     			}
     		String line = new String(b, p, l-1);
-    		if (line.charAt(0) == '#')
+    		if (line.isEmpty() || line.charAt(0) == '#')
     			;
     		else if (line.charAt(0) == '+') {
     		//	MenuBar n = new Menu(line.substring(1));
