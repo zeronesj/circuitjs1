@@ -99,7 +99,6 @@ class EditDialog extends Dialog {
 	
 	void buildDialog() {
 		int i;
-		int idx;
 		HorizontalPanel hp = new HorizontalPanel();
 		VerticalPanel vp = new VerticalPanel();
 		mainPanel.insert(hp, mainPanel.getWidgetIndex(bottomButtonPanel));
@@ -117,7 +116,6 @@ class EditDialog extends Dialog {
 			    vp.add(l = new Label(name));
 			if (i!=0 && l != null)
 				l.setStyleName("topSpace");
-			idx = mainPanel.getWidgetIndex(bottomButtonPanel);
 			if (ei.choice != null) {
 				vp.add(ei.choice);
 				ei.choice.addChangeHandler( new ChangeHandler() {
@@ -166,6 +164,7 @@ class EditDialog extends Dialog {
 			    }
 			}
 			if (vp.getWidgetCount() > 15) {
+			    // start a new column
 			    vp = new VerticalPanel();
 			    hp.add(vp);
 			    vp.getElement().getStyle().setPaddingLeft(10, Unit.PX);
