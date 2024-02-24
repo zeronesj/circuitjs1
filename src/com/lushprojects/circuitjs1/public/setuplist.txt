@@ -4,13 +4,16 @@ ohms.txt Ohm's Law
 resistors.txt Resistors
 cap.txt Capacitor
 induct.txt Inductor
->lrc.txt LRC Circuit
+lrc.txt LRC Circuit
 voltdivide.txt Voltage Divider
 pot.txt Potentiometer
 potdivide.txt Potentiometer Divider
 thevenin.txt Thevenin's Theorem
 norton.txt Norton's Theorem
 -
+>relays.txt Relays
+3motor.txt 3-Phase Motor
+motorprotect.txt Motor Protection Switch
 +A/C Circuits
 capac.txt Capacitor
 inductac.txt Inductor

@@ -488,7 +488,7 @@ MouseOutHandler, MouseWheelHandler {
 	exportAsTextItem = iconMenuItem("export", "Export As Text...", new MyCommand("file","exportastext"));
 	fileMenuBar.addItem(exportAsTextItem);
 	fileMenuBar.addItem(iconMenuItem("export", "Export As Image...", new MyCommand("file","exportasimage")));
-	fileMenuBar.addItem(iconMenuItem("export", "Export As SVG...", new MyCommand("file","exportassvg")));
+	fileMenuBar.addItem(iconMenuItem("export", "Export As SVG...", new MyCommand("file","exportassvg")));    	
 	fileMenuBar.addItem(iconMenuItem("microchip", "Create Subcircuit...", new MyCommand("file","createsubcircuit")));
 	fileMenuBar.addItem(iconMenuItem("magic", "Find DC Operating Point", new MyCommand("file", "dcanalysis")));
 	recoverItem = iconMenuItem("back-in-time", "Recover Auto-Save", new MyCommand("file","recover"));
@@ -547,7 +547,7 @@ MouseOutHandler, MouseWheelHandler {
 	m.addItem(selectAllItem = menuItemWithShortcut("select-all", "Select All", Locale.LS(ctrlMetaKey + "A"), new MyCommand("edit","selectAll")));
 	m.addSeparator();
 	m.addItem(menuItemWithShortcut("search", "Find Component...", "/", new MyCommand("edit", "search")));
-	m.addItem(iconMenuItem("target", weAreInUS(false) ? "Center Circuit" : "Centre Circuit", new MyCommand("edit", "centrecircuit")));
+	m.addItem(menuItemWithShortcut("target", weAreInUS(false) ? "Center Circuit" : "Centre Circuit", "Space", new MyCommand("edit", "centrecircuit")));
 	m.addItem(menuItemWithShortcut("zoom-11", "Zoom 100%", "0", new MyCommand("zoom", "zoom100")));
 	m.addItem(menuItemWithShortcut("zoom-in", "Zoom In", "+", new MyCommand("zoom", "zoomin")));
 	m.addItem(menuItemWithShortcut("zoom-out", "Zoom Out", "-", new MyCommand("zoom", "zoomout")));
@@ -700,12 +700,14 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	});
 
-	/*
+	
+/*
 	dumpMatrixButton = new Button("Dump Matrix");
 	dumpMatrixButton.addClickHandler(new ClickHandler() {
 	    public void onClick(ClickEvent event) { dumpMatrix = true; }});
 	verticalPanel.add(dumpMatrixButton);// IES for debugging
-	 */
+*/
+	
 
 	if (LoadFile.isSupported())
 	    verticalPanel.add(loadFileInput = new LoadFile(this));
@@ -1073,12 +1075,16 @@ MouseOutHandler, MouseWheelHandler {
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Switch"), "SwitchElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Push Switch"), "PushSwitchElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add SPDT Switch"), "Switch2Elm"));
+    	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add DPDT Switch"), "DPDTSwitchElm"));
+    	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Cross Switch"), "CrossSwitchElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Make-Before-Break Switch"), "MBBSwitchElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Potentiometer"), "PotElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Transformer"), "TransformerElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Tapped Transformer"), "TappedTransformerElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Transmission Line"), "TransLineElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Relay"), "RelayElm"));
+    	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Relay Coil"), "RelayCoilElm"));
+    	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Relay Contact"), "RelayContactElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Memristor"), "MemristorElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Spark Gap"), "SparkGapElm"));
     	passMenuBar.addItem(getClassCheckItem(Locale.LS("Add Fuse"), "FuseElm"));
@@ -1127,6 +1133,7 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem(Locale.LS("Add LED Array"), "LEDArrayElm"));
     	outputMenuBar.addItem(getClassCheckItem(Locale.LS("Add Stop Trigger"), "StopTriggerElm"));
     	outputMenuBar.addItem(getClassCheckItem(Locale.LS("Add DC Motor"), "DCMotorElm"));
+    	outputMenuBar.addItem(getClassCheckItem(Locale.LS("Add 3-Phase Motor"), "ThreePhaseMotorElm"));
     	outputMenuBar.addItem(getClassCheckItem(Locale.LS("Add Wattmeter"), "WattmeterElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+Locale.LS("&nbsp;</div>Outputs and Labels")), outputMenuBar);
     	
@@ -1172,6 +1179,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeBlocMenuBar.addItem(getClassCheckItem(Locale.LS("Add Time Delay Relay"), "TimeDelayRelayElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(Locale.LS("Add LM317"), "CustomCompositeElm:~LM317-v2"));
     	activeBlocMenuBar.addItem(getClassCheckItem(Locale.LS("Add TL431"), "CustomCompositeElm:~TL431"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(Locale.LS("Add Motor Protection Switch"), "MotorProtectionSwitchElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(Locale.LS("Add Subcircuit Instance"), "CustomCompositeElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+Locale.LS("&nbsp;</div>Active Building Blocks")), activeBlocMenuBar);
     	
@@ -1236,7 +1244,8 @@ MouseOutHandler, MouseWheelHandler {
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+Locale.LS("&nbsp;</div>Drag")), otherMenuBar);
 
     	mainMenuBar.addItem(mi=getClassCheckItem(Locale.LS("Select/Drag Sel"), "Select"));
-    	mi.setShortcut(Locale.LS("(space or Shift-drag)"));
+    	mi.setShortcut(Locale.LS("(ESC or Shift-drag)"));
+	mainMenuBar.addItem(iconMenuItem("export", "Copy Circuit Image to Clipboard", new MyCommand("file","copypng")));
     }
     
     void composeSubcircuitMenu() {
@@ -2516,7 +2525,7 @@ MouseOutHandler, MouseWheelHandler {
 	    /*System.out.println("row " + i + " " + re.lsChanges + " " + re.rsChanges + " " +
 			       re.dropRow);*/
 	    
-//	    if (qp != -100) continue;   // uncomment this line to disable matrix simplification for debugging purposes
+	    //if (qp != -100) continue;   // uncomment this line to disable matrix simplification for debugging purposes
 	    
 	    if (re.lsChanges || re.dropRow || re.rsChanges)
 		continue;
@@ -3265,6 +3274,11 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	if (item=="exportasimage")
 		doExportAsImage();
+    	if (item=="copypng") {
+		doImageToClipboard();
+    		if (contextPanel!=null)
+			contextPanel.hide();
+    	}
     	if (item=="exportassvg")
 		doExportAsSVG();
     	if (item=="createsubcircuit")
@@ -3668,6 +3682,19 @@ MouseOutHandler, MouseWheelHandler {
     {
     	dialogShowing = new ExportAsImageDialog(CAC_IMAGE);
     	dialogShowing.show();
+    }
+
+    private static native void clipboardWriteImage(CanvasElement cv) /*-{
+	cv.toBlob(function(blob) {
+	    var promise = parent.navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+	    promise.then(function(x) { console.log(x); });
+	});
+    }-*/;
+
+    void doImageToClipboard()
+    {
+	Canvas cv = CirSim.theSim.getCircuitAsCanvas(CAC_IMAGE);
+	clipboardWriteImage(cv.getCanvasElement());
     }
     
     void doCreateSubcircuit()
@@ -5462,10 +5489,8 @@ MouseOutHandler, MouseWheelHandler {
     			tempMouseMode = mouseMode;
     		}
     		if (cc==32) {
-			    setMouseMode(MODE_SELECT);
-			    mouseModeStr = "Select";
-			    tempMouseMode = mouseMode;
-			    e.cancel();    			
+			menuPerformed("key", "centrecircuit");
+			e.cancel();
     		}
     	}
     }
@@ -5739,6 +5764,12 @@ MouseOutHandler, MouseWheelHandler {
     	case 422: return new DelayBufferElm(x1, y1, x2, y2, f, st);
     	case 423: return new LineElm(x1, y1, x2, y2, f, st);
     	case 424: return new DataInputElm(x1, y1, x2, y2, f, st);
+    	case 425: return new RelayCoilElm(x1, y1, x2, y2, f, st);
+    	case 426: return new RelayContactElm(x1, y1, x2, y2, f, st);
+    	case 427: return new ThreePhaseMotorElm(x1, y1, x2, y2, f, st);
+    	case 428: return new MotorProtectionSwitchElm(x1, y1, x2, y2, f, st);
+    	case 429: return new DPDTSwitchElm(x1, y1, x2, y2, f, st);
+    	case 430: return new CrossSwitchElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5808,6 +5839,12 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new TransLineElm(x1, y1);
     	if (n=="RelayElm")
     		return (CircuitElm) new RelayElm(x1, y1);
+    	if (n=="RelayCoilElm")
+    		return (CircuitElm) new RelayCoilElm(x1, y1);
+    	if (n=="RelayContactElm")
+    		return (CircuitElm) new RelayContactElm(x1, y1);
+    	if (n=="ThreePhaseMotorElm")
+    		return (CircuitElm) new ThreePhaseMotorElm(x1, y1);
     	if (n=="MemristorElm")
     		return (CircuitElm) new MemristorElm(x1, y1);
     	if (n=="SparkGapElm")
@@ -6003,6 +6040,12 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new DelayBufferElm(x1, y1);
     	if (n=="DataInputElm")
 		return (CircuitElm) new DataInputElm(x1, y1);
+    	if (n=="MotorProtectionSwitchElm")
+		return (CircuitElm) new MotorProtectionSwitchElm(x1, y1);
+    	if (n=="DPDTSwitchElm")
+		return (CircuitElm) new DPDTSwitchElm(x1, y1);
+    	if (n=="CrossSwitchElm")
+		return (CircuitElm) new CrossSwitchElm(x1, y1);
     	
     	// handle CustomCompositeElm:modelname
     	if (n.startsWith("CustomCompositeElm:")) {
