@@ -352,8 +352,10 @@ class RelayCoilElm extends CircuitElm {
     }
     
     public void setEditValue(int n, EditInfo ei) {
-	if (n == 0)
+	if (n == 0) {
 	    type = ei.choice.getSelectedIndex();
+	    setPoints();
+	}
 	if (n == 1 && ei.value > 0) {
 	    inductance = ei.value;
 	    ind.setup(inductance, coilCurrent, Inductor.FLAG_BACK_EULER);
