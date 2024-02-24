@@ -33,7 +33,6 @@ class SwitchElm extends CircuitElm {
 	momentary = false;
 	position = 0;
 	posCount = 2;
-	flags = FLAG_IEC;
 	label = null;
     }
     SwitchElm(int xx, int yy, boolean mm) {
@@ -41,7 +40,6 @@ class SwitchElm extends CircuitElm {
 	position = (mm) ? 1 : 0;
 	momentary = mm;
 	posCount = 2;
-	flags = FLAG_IEC;
 	label = null;
     }
     public SwitchElm(int xa, int ya, int xb, int yb, int f,
