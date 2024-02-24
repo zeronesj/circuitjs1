@@ -66,7 +66,10 @@ package com.lushprojects.circuitjs1.client;
 		interpPoint(point1, point2, throwPosts[i*2+1], 1, offset+openhs);
 		interpPoint(lead1,  lead2,  throwLeads[i*4+1], 1, offset+openhs);
 		interpPoint(lead1,  lead2,  throwLeads[i*4+2], 1, offset+openhs*.33);
-		interpPoint(lead1,  lead2,  throwLeads[i*4+3], 1.2, offset-openhs*.33);
+                if (useIECSymbol())
+                    interpPoint(lead1,  lead2,  throwLeads[i*4+3], 1.2, offset-openhs*.33);
+                else
+                    interpPoint(lead1,  lead2,  throwLeads[i*4+3], 1, offset-openhs);
 	    }
 	    double dp = 16/dn;
 	    interpPoint(point1, point2, crossPoints[0], 1+dp  , openhs);
@@ -97,7 +100,8 @@ package com.lushprojects.circuitjs1.client;
 		setVoltageColor(g, volts[i*2]);
 		drawThickLine(g, polePosts[i],      poleLeads[i]);
 		setVoltageColor(g, volts[i*2+1]);
-		drawThickLine(g, throwLeads[i*4  ], throwLeads[i*4+2]);
+                if (useIECSymbol())
+                    drawThickLine(g, throwLeads[i*4  ], throwLeads[i*4+2]);
 		drawThickLine(g, throwPosts[i*2  ], throwLeads[i*4  ]);
 		setVoltageColor(g, volts[3-i*2]);
 		drawThickLine(g, throwPosts[i*2+1], throwLeads[i*4+1]);
@@ -215,7 +219,16 @@ package com.lushprojects.circuitjs1.client;
 	int getShortcut() { return 0; }
 
 	public EditInfo getEditInfo(int n) {
+	    if (n == 0)
+		return EditInfo.createCheckbox("IEC Symbol", useIECSymbol());
 	    return null;
+	}
+	
+	public void setEditValue(int n, EditInfo ei) {
+	    if (n == 0) {
+		flags = ei.changeFlag(flags, FLAG_IEC);
+		setPoints();
+	    }
 	}
 
     }
