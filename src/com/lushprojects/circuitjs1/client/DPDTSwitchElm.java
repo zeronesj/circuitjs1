@@ -132,10 +132,10 @@ package com.lushprojects.circuitjs1.client;
 	}
 
 	void setCurrent(int vn, double c) {
-	    if (vn == voltageSources[0])
-		currents[0] = c;
-	    else
-		currents[1] = c;
+	    int i;
+	    for (i = 0; i != poleCount; i++)
+		if (vn == voltageSources[i])
+		    currents[i] = c;
 	}
 	Rectangle getSwitchRect() {
 	    return new Rectangle(poleLeads[0]).union(new Rectangle(throwLeads[1])).union(new Rectangle(throwLeads[poleCount*4-4]));
