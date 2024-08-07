@@ -179,8 +179,8 @@ package com.lushprojects.circuitjs1.client;
 	    if (!hasSchmittInputs())
 		return (volts[x] > highVoltage*.5) ? high : !high;
 	    boolean res = volts[x] > highVoltage*(inputStates[x] ? .35 : .55);
-	    inputStates[x] = res ? high : !high;
-	    return res;
+	    inputStates[x] = res;
+	    return res ? high : !high;
 	}
 	abstract boolean calcFunction();
 	
