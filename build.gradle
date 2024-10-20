@@ -9,6 +9,8 @@
 //      into a Gradle build from Maven and Eclipse+GWT based builds.
 //=====================================================================
 
+// tested with gradle 8.7
+
 // 1. Run Gradle build with verbose output:
 // gradle compileGwt --console verbose --info
 // 2. Create the web-site directory from the build files:
