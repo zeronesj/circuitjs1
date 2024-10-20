@@ -47,7 +47,7 @@ Once you have successfully connected your local VS Code to the remote workspace,
 >
 > Theoretically, it would be possible to use the browser-based VS Code interface. However, both Gitpod and Codespaces map forwarded ports to different domain names instead of different ports, which confuses the GWT code loader. It is possible to fix this by live-patching the `serverUrl` variable in `circuitjs1.nocache.js` using a custom HTTP server, but it also requires setting the port visibility to "Public" to avoid CORS errors due to redirects. Using a local installation of VS Code is much simpler.
 
-### Gradle
+### Development using Gradle
 
 To build the application using gradle, do the following:
 
@@ -59,6 +59,15 @@ gradle makeSite --console verbose --info
 ```
 
 Now, just open `site/circuitjs.html` with your browser and enjoy!
+
+You can do the same thing inside GitHub Codespaces.  Then after creating the site directory, you can create a web server using:
+
+```bash
+cd site
+python3 -m http.server
+```
+
+Then go to the Ports tab, hover over the "Forwarded Address" and click "Follow Link".  Then click `circuitjs.html` to view the application.
 
 ## Deployment of the web application
 
