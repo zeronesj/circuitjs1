@@ -9,6 +9,14 @@
 //      into a Gradle build from Maven and Eclipse+GWT based builds.
 //=====================================================================
 
+// 1. Run Gradle build with verbose output:
+// gradle compileGwt --console verbose --info
+// 2. Create the web-site directory from the build files:
+// gradle makeSite --console verbose --info
+// 3. To cleanup and remove the target, build and site directories
+// gradle cleanUp
+
+
 // This must be before plugins!
 buildscript {
     repositories {
@@ -153,15 +161,15 @@ task showRepos {
 // "system" related tasks
 //---------------------------------------------------------------------
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier.set('sources')
     from(sourceSets.main.allJava)
 }
 
 tasks.withType(Test) {
     //maxParallelForks = 4              // 4
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1     // Use: #CPUs/2 | 4
-    reports.html.enabled = true         // false
-    reports.junitXml.enabled = false    // false
+    reports.html.required.set(true)         // Enable HTML report
+    reports.junitXml.required.set(false)    // Disable JUnit XML report
 }
 
 tasks.withType(JavaCompile) {
