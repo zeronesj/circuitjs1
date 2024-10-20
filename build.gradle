@@ -141,6 +141,9 @@ task makeSite {
             include('**/*')                 // to ensure recursion!
             exclude('gwt/', 'WEB-INF/')
             into 'site'
+
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE  // Change to INCLUDE, WARN, or FAIL as needed
+
             println "Done\n"
         }
     }
