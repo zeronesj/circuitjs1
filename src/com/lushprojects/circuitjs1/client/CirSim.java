@@ -3875,6 +3875,7 @@ MouseOutHandler, MouseWheelHandler {
 		if (title != null)
 		    titleLabel.setText(title);
 		unsavedChanges = false;
+		ExportAsLocalFileDialog.setLastFileName(null);
 	}
 	
 	void loadFileFromURL(String url) {
