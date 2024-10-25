@@ -32,6 +32,7 @@ class TriStateElm extends CircuitElm {
 	r_on = 0.1;
 	r_off = 1e10;
 	r_off_ground = 1e8;
+	noDiagonal = true;
     }
 
     public TriStateElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st) {
@@ -39,6 +40,7 @@ class TriStateElm extends CircuitElm {
 	r_on = 0.1;
 	r_off = 1e10;
 	r_off_ground = 0;
+	noDiagonal = true;
 	try {
 	    r_on = new Double(st.nextToken()).doubleValue();
 	    r_off = new Double(st.nextToken()).doubleValue();
@@ -64,7 +66,10 @@ class TriStateElm extends CircuitElm {
 
     void setPoints() {
 	super.setPoints();
-	calcLeads(32);
+	int len = 32;
+	calcLeads(len);
+	adjustLeadsToGrid();
+
 	ps = new Point();
 	int hs = 16;
 
@@ -73,12 +78,12 @@ class TriStateElm extends CircuitElm {
 	    ww = (int) (dn / 2);
 	Point triPoints[] = newPointArray(3);
 	interpPoint2(lead1, lead2, triPoints[0], triPoints[1], 0, hs + 2);
-	triPoints[2] = interpPoint(point1, point2, .5 + (ww - 2) / dn);
+	triPoints[2] = interpPoint(lead1, lead2, .5 + (ww - 2) / (double)len);
 	gatePoly = createPolygon(triPoints);
 
 	int sign = ((flags & FLAG_FLIP) == 0) ? -1 : 1;
-	point3 = interpPoint(point1, point2, .5, sign*hs);
-	lead3 = interpPoint(point1, point2, .5, sign*hs/2);
+	point3 = interpPoint(lead1, lead2, .5, sign*hs);
+	lead3 = interpPoint(lead1, lead2, .5, sign*hs/2);
     }
 
     void draw(Graphics g) {
@@ -155,14 +160,8 @@ class TriStateElm extends CircuitElm {
 	    flip = !flip;
 	    yy = y;
 	}
-	int q1 = abs(x - xx) + abs(y - yy);
-	int q2 = (q1 / 2) % sim.gridSize;
-	if (q2 != 0)
-	    return;
-	x2 = xx;
-	y2 = yy;
 	flags = flip ? (flags | FLAG_FLIP) : (flags & ~FLAG_FLIP);
-	setPoints();
+	super.drag(xx, yy);
     }
 
     int getPostCount() {

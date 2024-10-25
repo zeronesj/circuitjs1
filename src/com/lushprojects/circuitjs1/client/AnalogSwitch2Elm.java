@@ -33,11 +33,12 @@ class AnalogSwitch2Elm extends AnalogSwitchElm {
     void setPoints() {
 	super.setPoints();
 	calcLeads(32);
+	adjustLeadsToGrid();
 	swposts = newPointArray(2);
 	swpoles = newPointArray(2);
 	interpPoint2(lead1,  lead2,  swpoles[0], swpoles[1], 1, openhs);
 	interpPoint2(point1, point2, swposts[0], swposts[1], 1, openhs);
-	ctlPoint = interpPoint(point1, point2, .5, openhs);
+	ctlPoint = interpPoint(lead1, lead2, .5, openhs);
     }
     int getPostCount() { return 4; }
 

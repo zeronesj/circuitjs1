@@ -292,6 +292,16 @@ public abstract class CircuitElm implements Editable {
 	lead2 = interpPoint(point1, point2, (dn+len)/(2*dn));
     }
 
+    // adjust leads so that the point exactly between them is a grid point (so we can place a terminal there)
+    void adjustLeadsToGrid() {
+        int cx = (point1.x+point2.x)/2;
+        int cy = (point1.y+point2.y)/2;
+        int adjx = sim.snapGrid(cx)-cx;
+        int adjy = sim.snapGrid(cy)-cy;
+        lead1.move(adjx, adjy);
+        lead2.move(adjx, adjy);
+    }
+
     // calculate point fraction f between a and b, linearly interpolated
     Point interpPoint(Point a, Point b, double f) {
 	Point p = new Point();

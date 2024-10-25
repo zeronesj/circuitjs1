@@ -26,12 +26,14 @@ class AnalogSwitchElm extends CircuitElm {
 	super(xx, yy);
 	r_on = 20;
 	r_off = 1e10;
+	noDiagonal = true;
     }
     public AnalogSwitchElm(int xa, int ya, int xb, int yb, int f,
 			   StringTokenizer st) {
 	super(xa, ya, xb, yb, f);
 	r_on = 20;
 	r_off = 1e10;
+	noDiagonal = true;
 	try {
 	    r_on = new Double(st.nextToken()).doubleValue();
 	    r_off = new Double(st.nextToken()).doubleValue();
@@ -49,10 +51,11 @@ class AnalogSwitchElm extends CircuitElm {
     void setPoints() {
 	super.setPoints();
 	calcLeads(32);
+	adjustLeadsToGrid();
 	ps = new Point();
 	int openhs = 16;
-	point3 = interpPoint(point1, point2, .5, -openhs);
-	lead3  = interpPoint(point1, point2, .5, -openhs/2);
+	point3 = interpPoint(lead1, lead2, .5, -openhs);
+	lead3  = interpPoint(lead1, lead2, .5, -openhs/2);
     }
 	
     void draw(Graphics g) {
@@ -90,20 +93,6 @@ class AnalogSwitchElm extends CircuitElm {
 	    open = !open;
 	resistance = (open) ? r_off : r_on;
 	sim.stampResistor(nodes[0], nodes[1], resistance);
-    }
-    void drag(int xx, int yy) {
-	xx = sim.snapGrid(xx);
-	yy = sim.snapGrid(yy);
-	if (abs(x-xx) < abs(y-yy))
-	    xx = x;
-	else
-	    yy = y;
-	int q1 = abs(x-xx)+abs(y-yy);
-	int q2 = (q1/2) % sim.gridSize;
-	if (q2 != 0)
-	    return;
-	x2 = xx; y2 = yy;
-	setPoints();
     }
     int getPostCount() { return 3; }
     Point getPost(int n) {
