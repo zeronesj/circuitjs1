@@ -718,7 +718,7 @@ class Scope {
 	  real[i] = .5*(maxV[ii]+minV[ii]);
 	  imag[i] = 0;
       }
-      fft.fft(real, imag);
+      fft.fft(real, imag, true);
       double maxM = 1e-8;
       for (int i = 0; i < scopePointCount / 2; i++) {
     	  double m = fft.magnitude(real[i], imag[i]);
