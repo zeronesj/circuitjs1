@@ -4514,36 +4514,15 @@ MouseOutHandler, MouseWheelHandler {
     		newMouseElm=mouseElm;
     	    } else {
     		int bestDist = 100000000;
-    		int bestArea = 100000000;
     		for (i = 0; i != elmList.size(); i++) {
-    			CircuitElm ce = getElm(i);
-    			if (ce.boundingBox.contains(gx, gy)) {
-    				int j;
-    				int area = ce.boundingBox.width * ce.boundingBox.height;
-    				int jn = ce.getPostCount();
-    				if (jn > 2)
-    					jn = 2;
-    				for (j = 0; j != jn; j++) {
-    					Point pt = ce.getPost(j);
-    					int dist = Graphics.distanceSq(gx, gy, pt.x, pt.y);
-
-    					// if multiple elements have overlapping bounding boxes,
-    					// we prefer selecting elements that have posts close
-    					// to the mouse pointer and that have a small bounding
-    					// box area.
-    					if (dist <= bestDist && area <= bestArea) {
-    						bestDist = dist;
-    						bestArea = area;
-    						newMouseElm = ce;
-    					}
-    				}
-    				// prefer selecting elements that have small bounding box area (for
-    				// elements with no posts)
-    				if (ce.getPostCount() == 0 && area <= bestArea) {
-    				    newMouseElm = ce;
-    				    bestArea = area;
-    				}
-    			}
+		    CircuitElm ce = getElm(i);
+		    if (ce.boundingBox.contains(gx, gy)) {
+			int dist = ce.getMouseDistance(gx, gy);
+			if (dist >= 0 && dist < bestDist) {
+			    bestDist = dist;
+			    newMouseElm = ce;
+			}
+		    }
     		} // for
     	    }
     	}

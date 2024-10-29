@@ -1110,6 +1110,24 @@ public abstract class CircuitElm implements Editable {
     }
     void draggingDone() {}
     
+    int getMouseDistance(int gx, int gy) {
+	int jn = getPostCount();
+	if (jn > 2)
+	    jn = 2;
+	int bestDist = 10000000;
+	int j;
+	for (j = 0; j != jn; j++) {
+	    Point pt = getPost(j);
+	    int dist = Graphics.distanceSq(gx, gy, pt.x, pt.y);
+	    if (dist < bestDist)
+		bestDist = dist;
+	}
+
+	if (getPostCount() == 0)
+	    return Graphics.distanceSq(gx, gy, x, y);
+	return bestDist;
+    }
+
     String dumpModel() { return null; }
     
     boolean isMouseElm() {
