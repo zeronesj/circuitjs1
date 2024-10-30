@@ -96,5 +96,12 @@ class BoxElm extends GraphicElm {
 	   return dy2*dy2;
 	return -1;
     }
+
+    void selectRect(Rectangle r, boolean add) {
+        if (r.contains(boundingBox))
+            selected = true;
+        else if (!add)
+            selected = false;
+    }
 }
 
