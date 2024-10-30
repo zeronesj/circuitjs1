@@ -1110,17 +1110,16 @@ public abstract class CircuitElm implements Editable {
     }
     void draggingDone() {}
     
-    int lineDistanceSq(int xa, int ya, int xb, int yb, int gx, int gy, int max) {
+    int lineDistanceSq(int xa, int ya, int xb, int yb, int gx, int gy) {
 	int dtop = (yb-ya)*gx - (xb-xa)*gy + xb*ya - yb*xa;
 	int dbot = (yb-ya)*(yb-ya) + (xb-xa)*(xb-xa);
-	int val = dtop*dtop/dbot;
-	return (val < max) ? val : max;
+	return dtop*dtop/dbot;
     }
 
     int getMouseDistance(int gx, int gy) {
 	if (getPostCount() == 0)
 	    return Graphics.distanceSq(gx, gy, (x2+x)/2, (y2+y)/2);
-	return lineDistanceSq(x, y, x2, y2, gx, gy, 1000000);
+	return lineDistanceSq(x, y, x2, y2, gx, gy);
     }
 
     String dumpModel() { return null; }
