@@ -151,6 +151,7 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
 	double v2 = volts[1];
 	double v3 = volts[2];
 	setBbox(point1, point2, hs);
+	adjustBbox(post3, post3);
 	draw2Leads(g);
 	setPowerColor(g, true);
 	double segf = 1./segments;
