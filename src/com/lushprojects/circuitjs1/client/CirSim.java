@@ -645,6 +645,7 @@ MouseOutHandler, MouseWheelHandler {
 	mouseWheelEditCheckItem.setState(mouseWheelEdit);
 
 	m.addItem(new CheckboxAlignedMenuItem(Locale.LS("Shortcuts..."), new MyCommand("options", "shortcuts")));
+	m.addItem(new CheckboxAlignedMenuItem(Locale.LS("Subcircuits..."), new MyCommand("options", "subcircuits")));
 	m.addItem(optionsItem = new CheckboxAlignedMenuItem(Locale.LS("Other Options..."), new MyCommand("options","other")));
 	if (isElectron())
 	    m.addItem(new CheckboxAlignedMenuItem(Locale.LS("Toggle Dev Tools"), new MyCommand("options","devtools")));
@@ -3294,6 +3295,10 @@ MouseOutHandler, MouseWheelHandler {
     		contextPanel.hide();
     	if (menu=="options" && item=="shortcuts") {
     	    	dialogShowing = new ShortcutsDialog(this);
+    	    	dialogShowing.show();
+    	}
+    	if (menu=="options" && item=="subcircuits") {
+    	    	dialogShowing = new SubcircuitDialog(this);
     	    	dialogShowing.show();
     	}
     	if (item=="search") {
