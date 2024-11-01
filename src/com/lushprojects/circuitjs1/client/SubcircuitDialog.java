@@ -23,7 +23,7 @@ public class SubcircuitDialog extends Dialog {
     public SubcircuitDialog(CirSim sim) {
         setText("Subcircuit Manager");
         //setAnimationEnabled(true);
-        //setGlassEnabled(true);
+        setGlassEnabled(true);
 
         mainPanel = new VerticalPanel();
         mainPanel.setSpacing(10);
