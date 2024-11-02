@@ -1474,6 +1474,7 @@ MouseOutHandler, MouseWheelHandler {
                 stampCircuit();
             } catch (Exception e) {
                 stop("Exception in stampCircuit()", null);
+		GWT.log("Exception in stampCircuit", e);
             }
             perfmon.stopContext();
         }
@@ -1973,7 +1974,6 @@ MouseOutHandler, MouseWheelHandler {
     }
     // map points to node numbers
     HashMap<Point,NodeMapEntry> nodeMap;
-    HashMap<Point,Integer> postCountMap;
     
     class WireInfo {
 	CircuitElm wire;
@@ -2183,8 +2183,6 @@ MouseOutHandler, MouseWheelHandler {
 	    // allocate a node for each post and match posts to nodes
 	    for (j = 0; j != posts; j++) {
 		Point pt = ce.getPost(j);
-		Integer g = postCountMap.get(pt);
-		postCountMap.put(pt, g == null ? 1 : g+1);
 		NodeMapEntry cln = nodeMap.get(pt);
 		
 		// is this node not in map yet?  or is the node number unallocated?
@@ -2384,7 +2382,8 @@ MouseOutHandler, MouseWheelHandler {
 	return true;
     }
     
-    // analyze the circuit when something changes, so it can be simulated
+    // analyze the circuit when something changes, so it can be simulated.
+    // Most of this has been moved to preStampCircuit() so it can be avoided if the simulation is stopped.
     void analyzeCircuit() {
 	stopMessage = null;
 	stopElm = null;
@@ -2393,9 +2392,14 @@ MouseOutHandler, MouseWheelHandler {
 	    badConnectionList = new Vector<Point>();
 	    return;
 	}
+	makePostDrawList();
+
+	needsStamp = true;
+    }
+
+    boolean preStampCircuit() {
 	int i, j;
 	nodeList = new Vector<CircuitNode>();
-	postCountMap = new HashMap<Point,Integer>();
 
 	calculateWireClosure();
 	setGroundNode();
@@ -2403,9 +2407,8 @@ MouseOutHandler, MouseWheelHandler {
 	// allocate nodes and voltage sources
 	makeNodeList();
 	
-	makePostDrawList();
 	if (!calcWireInfo())
-	    return;
+	    return false;
 	nodeMap = null; // done with this
 	
 	int vscount = 0;
@@ -2440,7 +2443,7 @@ MouseOutHandler, MouseWheelHandler {
 
 	findUnconnectedNodes();
 	if (!validateCircuit())
-	    return;
+	    return false;
 	
 	nodesWithGroundConnectionCount = nodesWithGroundConnection.size();
 	// only need this for validation
@@ -2450,10 +2453,14 @@ MouseOutHandler, MouseWheelHandler {
 	needsStamp = true;
 	
 	callAnalyzeHook();
+	return true;
     }
 
     // stamp the matrix, meaning populate the matrix as required to simulate the circuit (for all linear elements, at least)
     void stampCircuit() {
+	if (!preStampCircuit())
+	    return;
+
 	int i;
 	int matrixSize = nodeList.size()-1 + voltageSourceCount;
 	circuitMatrix = new double[matrixSize][matrixSize];
@@ -2635,6 +2642,18 @@ MouseOutHandler, MouseWheelHandler {
     // others should be drawn.  We can't use the node list for this purpose anymore because wires
     // have the same node number at both ends.
     void makePostDrawList() {
+        HashMap<Point,Integer> postCountMap = new HashMap<Point,Integer>();
+	int i, j;
+	for (i = 0; i != elmList.size(); i++) {
+	    CircuitElm ce = getElm(i);
+	    int posts = ce.getPostCount();
+	    for (j = 0; j != posts; j++) {
+		Point pt = ce.getPost(j);
+		Integer g = postCountMap.get(pt);
+		postCountMap.put(pt, g == null ? 1 : g+1);
+	    }
+	}
+
 	postDrawList = new Vector<Point>();
 	badConnectionList = new Vector<Point>();
 	for (Map.Entry<Point, Integer> entry : postCountMap.entrySet()) {
@@ -2644,7 +2663,6 @@ MouseOutHandler, MouseWheelHandler {
 	    // look for bad connections, posts not connected to other elements which intersect
 	    // other elements' bounding boxes
 	    if (entry.getValue() == 1) {
-		int j;
 		boolean bad = false;
 		Point cn = entry.getKey();
 		for (j = 0; j != elmList.size() && !bad; j++) {
@@ -2667,7 +2685,6 @@ MouseOutHandler, MouseWheelHandler {
 		    badConnectionList.add(cn);
 	    }
 	}
-	postCountMap = null;
     }
 
     class FindPathInfo {
