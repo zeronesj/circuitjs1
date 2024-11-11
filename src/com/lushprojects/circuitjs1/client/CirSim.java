@@ -3792,7 +3792,7 @@ MouseOutHandler, MouseWheelHandler {
     void getSetupList(final boolean openDefault) {
 
     	String url;
-    	url = GWT.getModuleBaseURL()+"setuplist.txt"+"?v="+random.nextInt(); 
+    	url = GWT.getModuleBaseURL()+"setuplist.txt"; // +"?v="+random.nextInt();
 		RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, url);
 		try {
 			requestBuilder.sendRequest(null, new RequestCallback() {
@@ -3891,8 +3891,8 @@ MouseOutHandler, MouseWheelHandler {
     
 	void readSetupFile(String str, String title) {
 		System.out.println(str);
-		// TODO: Maybe think about some better approach to cache management!
-		String url=GWT.getModuleBaseURL()+"circuits/"+str+"?v="+random.nextInt(); 
+		// don't avoid caching here, it's unnecessary and makes offline PWA's not work
+		String url=GWT.getModuleBaseURL()+"circuits/"+str; // +"?v="+random.nextInt(); 
 		loadFileFromURL(url);
 		if (title != null)
 		    titleLabel.setText(title);
