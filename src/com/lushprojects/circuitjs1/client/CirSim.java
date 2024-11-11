@@ -3797,7 +3797,8 @@ MouseOutHandler, MouseWheelHandler {
 		try {
 			requestBuilder.sendRequest(null, new RequestCallback() {
 				public void onError(Request request, Throwable exception) {
-					Window.alert(Locale.LS("Can't load circuit list!"));
+					if (!hideMenu)
+					    Window.alert(Locale.LS("Can't load circuit list!"));
 					GWT.log("File Error Response", exception);
 				}
 
