@@ -21,12 +21,14 @@ package com.lushprojects.circuitjs1.client;
 
 class AnalogSwitchElm extends CircuitElm {
     final int FLAG_INVERT = 1;
+    final int FLAG_PULLDOWN = 2;
     double resistance, r_on, r_off;
     public AnalogSwitchElm(int xx, int yy) {
 	super(xx, yy);
 	r_on = 20;
 	r_off = 1e10;
 	noDiagonal = true;
+	flags |= FLAG_PULLDOWN;
     }
     public AnalogSwitchElm(int xa, int ya, int xb, int yb, int f,
 			   StringTokenizer st) {
@@ -77,22 +79,37 @@ class AnalogSwitchElm extends CircuitElm {
 	drawPosts(g);
     }
     void calculateCurrent() {
-	current = (volts[0]-volts[1])/resistance;
+	if (needsPulldown() && open)
+	    current = 0;
+	else
+	    current = (volts[0]-volts[1])/resistance;
     }
 	
     // we need this to be able to change the matrix for each step
     boolean nonLinear() { return true; }
 
+    boolean needsPulldown() { return (flags & FLAG_PULLDOWN) != 0; }
+
     void stamp() {
 	sim.stampNonLinear(nodes[0]);
 	sim.stampNonLinear(nodes[1]);
+	if (needsPulldown()) {
+	    // pulldown resistor on each side
+	    sim.stampResistor(nodes[0], 0, r_off);
+	    sim.stampResistor(nodes[1], 0, r_off);
+	}
     }
     void doStep() {
 	open = (volts[2] < 2.5);
 	if ((flags & FLAG_INVERT) != 0)
 	    open = !open;
-	resistance = (open) ? r_off : r_on;
-	sim.stampResistor(nodes[0], nodes[1], resistance);
+
+	// if pulldown flag is set, resistance is r_on.  Otherwise, no connection.
+	// if pulldown flag is unset, resistance is r_on for on, r_off for off.
+	if (!(needsPulldown() && open)) {
+	    resistance = (open) ? r_off : r_on;
+	    sim.stampResistor(nodes[0], nodes[1], resistance);
+	}
     }
     int getPostCount() { return 3; }
     Point getPost(int n) {
@@ -105,6 +122,7 @@ class AnalogSwitchElm extends CircuitElm {
 	arr[3] = "I = " + getCurrentDText(getCurrent());
 	arr[4] = "Vc = " + getVoltageText(volts[2]);
     }
+
     // we have to just assume current will flow either way, even though that
     // might cause singular matrix errors
     boolean getConnection(int n1, int n2) {
@@ -112,6 +130,11 @@ class AnalogSwitchElm extends CircuitElm {
 	    return false;
 	return true;
     }
+
+    boolean hasGroundConnection(int n1) { 
+	return needsPulldown() && (n1 < 2);
+    }
+
     public EditInfo getEditInfo(int n) {
 	if (n == 0) {
 	    EditInfo ei = new EditInfo("", 0, -1, -1);
@@ -123,6 +146,9 @@ class AnalogSwitchElm extends CircuitElm {
 	    return new EditInfo("On Resistance (ohms)", r_on, 0, 0);
 	if (n == 2)
 	    return new EditInfo("Off Resistance (ohms)", r_off, 0, 0);
+	if (n == 3)
+	    return EditInfo.createCheckbox("Pulldown Resistor", needsPulldown());
+
 	return null;
     }
     public void setEditValue(int n, EditInfo ei) {
@@ -134,6 +160,8 @@ class AnalogSwitchElm extends CircuitElm {
 	    r_on = ei.value;
 	if (n == 2 && ei.value > 0)
 	    r_off = ei.value;
+	if (n == 3)
+	    flags = ei.changeFlag(flags, FLAG_PULLDOWN);
     }
     
     double getCurrentIntoNode(int n) {

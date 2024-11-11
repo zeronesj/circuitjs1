@@ -84,6 +84,10 @@ class AnalogSwitch2Elm extends AnalogSwitchElm {
 	sim.stampNonLinear(nodes[0]);
 	sim.stampNonLinear(nodes[1]);
 	sim.stampNonLinear(nodes[2]);
+	if (needsPulldown()) {
+	    sim.stampResistor(nodes[1], 0, r_off);
+	    sim.stampResistor(nodes[2], 0, r_off);
+	}
     }
     void doStep() {
 	open = (volts[3] < 2.5);
@@ -91,18 +95,27 @@ class AnalogSwitch2Elm extends AnalogSwitchElm {
 	    open = !open;
 	if (open) {
 	    sim.stampResistor(nodes[0], nodes[2], r_on);
-	    sim.stampResistor(nodes[0], nodes[1], r_off);
+	    if (!needsPulldown())
+	        sim.stampResistor(nodes[0], nodes[1], r_off);
 	} else {
 	    sim.stampResistor(nodes[0], nodes[1], r_on);
-	    sim.stampResistor(nodes[0], nodes[2], r_off);
+	    if (!needsPulldown())
+	        sim.stampResistor(nodes[0], nodes[2], r_off);
 	}
     }
 	
     boolean getConnection(int n1, int n2) {
 	if (n1 == 3 || n2 == 3)
 	    return false;
+	if (needsPulldown())
+	    return comparePair(n1, n2, 0, open ? 2 : 1);
 	return true;
     }
+
+    boolean hasGroundConnection(int n) {
+	return needsPulldown() && n != 3;
+    }
+
     void getInfo(String arr[]) {
 	arr[0] = "analog switch (SPDT)";
 	arr[1] = "I = " + getCurrentDText(getCurrent());
