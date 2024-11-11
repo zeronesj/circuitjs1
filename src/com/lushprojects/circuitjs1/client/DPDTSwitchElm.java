@@ -167,7 +167,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	
 	boolean getConnection(int n1, int n2) {
-	    return comparePair(n1, n2, 0, 1+position);
+	    return comparePair(n1, n2, 0, 1+position) || comparePair(n1, n2, 3, 4+position);
 	}
 	
 	boolean isWireEquivalent() { return true; }
