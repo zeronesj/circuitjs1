@@ -22,11 +22,12 @@ package com.lushprojects.circuitjs1.client;
 class AnalogSwitchElm extends CircuitElm {
     final int FLAG_INVERT = 1;
     final int FLAG_PULLDOWN = 2;
-    double resistance, r_on, r_off;
+    double resistance, r_on, r_off, threshold;
     public AnalogSwitchElm(int xx, int yy) {
 	super(xx, yy);
 	r_on = 20;
 	r_off = 1e10;
+	threshold = 2.5;
 	noDiagonal = true;
 	flags |= FLAG_PULLDOWN;
     }
@@ -35,15 +36,16 @@ class AnalogSwitchElm extends CircuitElm {
 	super(xa, ya, xb, yb, f);
 	r_on = 20;
 	r_off = 1e10;
+	threshold = 2.5;
 	noDiagonal = true;
 	try {
 	    r_on = new Double(st.nextToken()).doubleValue();
 	    r_off = new Double(st.nextToken()).doubleValue();
+	    threshold = new Double(st.nextToken()).doubleValue();
 	} catch (Exception e) { }
-	
     }
     String dump() {
-	return super.dump() + " " + r_on + " " + r_off;
+	return super.dump() + " " + r_on + " " + r_off + " " + threshold;
     }
     
     int getDumpType() { return 159; }
@@ -100,7 +102,7 @@ class AnalogSwitchElm extends CircuitElm {
 	}
     }
     void doStep() {
-	open = (volts[2] < 2.5);
+	open = (volts[2] < threshold);
 	if ((flags & FLAG_INVERT) != 0)
 	    open = !open;
 
@@ -148,6 +150,8 @@ class AnalogSwitchElm extends CircuitElm {
 	    return new EditInfo("Off Resistance (ohms)", r_off, 0, 0);
 	if (n == 3)
 	    return EditInfo.createCheckbox("Pulldown Resistor", needsPulldown());
+        if (n == 4)
+            return new EditInfo("Threshold", threshold, 10, -10);
 
 	return null;
     }
@@ -162,6 +166,8 @@ class AnalogSwitchElm extends CircuitElm {
 	    r_off = ei.value;
 	if (n == 3)
 	    flags = ei.changeFlag(flags, FLAG_PULLDOWN);
+	if (n == 4)
+	    threshold = ei.value;
     }
     
     double getCurrentIntoNode(int n) {

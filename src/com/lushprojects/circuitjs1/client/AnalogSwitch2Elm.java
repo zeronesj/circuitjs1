@@ -90,7 +90,7 @@ class AnalogSwitch2Elm extends AnalogSwitchElm {
 	}
     }
     void doStep() {
-	open = (volts[3] < 2.5);
+	open = (volts[3] < threshold);
 	if ((flags & FLAG_INVERT) != 0)
 	    open = !open;
 	if (open) {
