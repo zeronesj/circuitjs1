@@ -6291,8 +6291,8 @@ MouseOutHandler, MouseWheelHandler {
 	            CircuitElm.whiteColor = Color.white;
 	            CircuitElm.lightGrayColor = Color.lightGray;
 	            g.setColor(Color.black);
-	            g.fillRect(0, 0, w, h);
 	        }
+	        g.fillRect(0, 0, w, h);
 		dotsCheckItem.setState(false);
 
 	    	int wmargin = 140;
