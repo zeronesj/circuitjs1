@@ -13,9 +13,9 @@ public class Toolbar extends HorizontalPanel {
     private Label modeLabel;
 
     final String wireIcon = "<svg width='24' height='24' viewBox='-5 0 110 50' xmlns='http://www.w3.org/2000/svg'>" +
-                "<line x1='5' y1='45' x2='95' y2='5' stroke='black' stroke-width='8' />" +
-                "<circle cx='5' cy='45' r='10' fill='black' />" +
-                "<circle cx='95' cy='5' r='10' fill='black' />" +
+                "<line x1='5' y1='45' x2='95' y2='5' stroke='currentColor' stroke-width='8' />" +
+                "<circle cx='5' cy='45' r='10' fill='currentColor' />" +
+                "<circle cx='95' cy='5' r='10' fill='currentColor' />" +
             "</svg>";
 
     public Toolbar() {
@@ -80,6 +80,8 @@ public class Toolbar extends HorizontalPanel {
         iconLabel.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
+		// un-highlight
+        	iconLabel.getElement().getStyle().setColor("#333");
                 command.execute();
             }
         });
