@@ -2378,21 +2378,20 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	    
 	    // look for shorted caps, or caps w/ voltage but no R
-	    if (ce instanceof CapacitorElm) {
+	    if (ce.isIdealCapacitor()) {
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.SHORT, ce,
 						    ce.getNode(1));
 		if (fpi.findPath(ce.getNode(0))) {
 		    console(ce + " shorted");
 		    ((CapacitorElm) ce).shorted();
 		} else {
-		    // a capacitor loop used to cause a matrix error. but we changed the capacitor model
-		    // so it works fine now. The only issue is if a capacitor is added in parallel with
-		    // another capacitor with a nonzero voltage; in that case we will get oscillation unless
-		    // we reset both capacitors to have the same voltage. Rather than check for that, we just
-		    // give an error.
 		    fpi = new FindPathInfo(FindPathInfo.CAP_V, ce, ce.getNode(1));
 		    if (fpi.findPath(ce.getNode(0))) {
-			stop("Capacitor loop with no resistance!", ce);
+			// loop of ideal capacitors; set a small series resistance to avoid
+			// oscillation in case one of them has voltage on it
+			((CapacitorElm) ce).setSeriesResistance(.1);
+
+			// return false to re-stamp the circuit
 			return false;
 		    }
 		}
@@ -2477,10 +2476,20 @@ MouseOutHandler, MouseWheelHandler {
 
     // stamp the matrix, meaning populate the matrix as required to simulate the circuit (for all linear elements, at least)
     void stampCircuit() {
-	if (!preStampCircuit())
-	    return;
-
 	int i;
+
+	// preStampCircuit returns false if there's an error.  It can return false if we have capacitor loops
+	// but we just need to try again in that case.  Try again 10 times to avoid infinite loop.
+	for (i = 0; i != 10; i++)
+	    if (preStampCircuit() || stopMessage != null)
+		break;
+	if (stopMessage != null)
+	    return;
+	if (i == 10) {
+	    stop("failed to stamp circuit", null);
+	    return;
+	}
+
 	int matrixSize = nodeList.size()-1 + voltageSourceCount;
 	circuitMatrix = new double[matrixSize][matrixSize];
 	circuitRightSide = new double[matrixSize];
@@ -2772,7 +2781,7 @@ MouseOutHandler, MouseWheelHandler {
 		    return false;
 		if (type == CAP_V) {
 		    // checking for capacitor/voltage source loops
-		    if (!(ce.isWireEquivalent() || ce instanceof CapacitorElm || ce instanceof VoltageElm))
+		    if (!(ce.isWireEquivalent() || ce.isIdealCapacitor() || ce instanceof VoltageElm))
 			return false;
 		}
 		if (n1 == 0) {
