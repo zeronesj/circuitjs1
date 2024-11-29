@@ -129,6 +129,7 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem conventionCheckItem;
     CheckboxMenuItem noEditCheckItem;
     CheckboxMenuItem mouseWheelEditCheckItem;
+    CheckboxMenuItem toolbarCheckItem;
     private Label powerLabel;
     private Label titleLabel;
     private Scrollbar speedBar;
@@ -150,7 +151,7 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem combineAllItem;
     MenuItem separateAllItem;
     MenuBar mainMenuBar;
-	boolean hideMenu = false;
+    boolean hideMenu = false;
     MenuBar selectScopeMenuBar;
     Vector<MenuItem> selectScopeMenuItems;
     MenuBar subcircuitMenuBar[];
@@ -260,6 +261,8 @@ MouseOutHandler, MouseWheelHandler {
     Vector<UndoItem> undoStack, redoStack;
     double transform[];
     boolean unsavedChanges;
+    HashMap<String, String> classToLabelMap;
+    Toolbar toolbar;
 
     DockLayoutPanel layoutPanel;
     MenuBar menuBar;
@@ -282,6 +285,7 @@ MouseOutHandler, MouseWheelHandler {
     int canvasWidth, canvasHeight;
 
     static final int MENUBARHEIGHT = 30;
+    static final int TOOLBARHEIGHT = 40;
     static int VERTICALPANELWIDTH = 166; // default
     static final int POSTGRABSQ = 25;
     static final int MINPOSTGRABSIZE = 256;
@@ -324,6 +328,8 @@ MouseOutHandler, MouseWheelHandler {
     	//not needed on mobile since the width of the canvas' container div is set to 100% in ths CSS file
     	if (!isMobile(sidePanelCheckboxLabel))
     	    width=width-VERTICALPANELWIDTH;
+	if (toolbarCheckItem.getState())
+	    height -= TOOLBARHEIGHT;
 
     	width = Math.max(width, 0);   // avoid exception when setting negative width
     	height = Math.max(height, 0);
@@ -593,6 +599,12 @@ MouseOutHandler, MouseWheelHandler {
 		    setGrid();
 		}
 	}));
+	m.addItem(toolbarCheckItem = new CheckboxMenuItem(Locale.LS("Toolbar"),
+		new Command() { public void execute(){
+		    setToolbar();
+		}
+	}));
+	toolbarCheckItem.setState(!hideMenu && !noEditing && !hideSidebar && startCircuit == null && startCircuitText == null && startCircuitLink == null);
 	m.addItem(crossHairCheckItem = new CheckboxMenuItem(Locale.LS("Show Cursor Cross Hairs"),
 		new Command() { public void execute(){
 		    setOptionInStorage("crossHair", crossHairCheckItem.getState());
@@ -658,8 +670,11 @@ MouseOutHandler, MouseWheelHandler {
 
 	DOM.appendChild(layoutPanel.getElement(), topPanelCheckbox);
 	DOM.appendChild(layoutPanel.getElement(), topPanelCheckboxLabel);	
+
+	toolbar = new Toolbar();
 	if (!hideMenu)
 	    layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
+	layoutPanel.addNorth(toolbar, TOOLBARHEIGHT);
 
 	if (hideSidebar)
 	    VERTICALPANELWIDTH = 0;
@@ -685,7 +700,7 @@ MouseOutHandler, MouseWheelHandler {
 	});
 
 	cvcontext=cv.getContext2d();
-	setCanvasSize();
+	setToolbar(); // calls setCanvasSize()
 	layoutPanel.add(cv);
 	verticalPanel.add(buttonPanel);
 	buttonPanel.add(resetButton = new Button(Locale.LS("Reset")));
@@ -1316,6 +1331,10 @@ MouseOutHandler, MouseWheelHandler {
 
 
     CheckboxMenuItem getClassCheckItem(String s, String t) {
+	if (classToLabelMap == null)
+	    classToLabelMap = new HashMap<String, String>();
+	classToLabelMap.put(t, s);
+
     	// try {
     	//   Class c = Class.forName(t);
     	String shortcut="";
@@ -3527,6 +3546,11 @@ MouseOutHandler, MouseWheelHandler {
     			setMouseMode(MODE_DRAG_POST);
     		else if (s.compareTo("Select") == 0)
     			setMouseMode(MODE_SELECT);
+
+		String label = classToLabelMap.get(item);
+		if (label != null)
+		    toolbar.setModeLabel(label);
+
     		//		else if (s.length() > 0) {
     		//			try {
     		//				addingClass = Class.forName(s);
@@ -4999,6 +5023,11 @@ MouseOutHandler, MouseWheelHandler {
 	gridRound = gridSize/2-1;
     }
 
+    void setToolbar() {
+	layoutPanel.setWidgetHidden(toolbar, !toolbarCheckItem.getState());
+	setCanvasSize();
+    }
+
     void pushUndo() {
     	redoStack.removeAllElements();
     	String s = dumpCircuit();
@@ -5488,12 +5517,17 @@ MouseOutHandler, MouseWheelHandler {
     			if (c==null)
     				return;
     			setMouseMode(MODE_ADD_ELM);
+			toolbar.setModeLabel(c);
     			mouseModeStr=c;
+			String label = classToLabelMap.get(c);
+			if (label != null)
+			    toolbar.setModeLabel(label);
     			tempMouseMode = mouseMode;
     		}
     		if (cc==32) {
 			    setMouseMode(MODE_SELECT);
 			    mouseModeStr = "Select";
+			    toolbar.setModeLabel(classToLabelMap.get(mouseModeStr));
 			    tempMouseMode = mouseMode;
 			e.cancel();
     		}
