@@ -34,4 +34,6 @@ public class MyCommand implements Command {
 		circuitjs1.mysim.menuPerformed(menuName, itemName);
 	}
 
+	public String getMenuName() { return menuName; }
+	public String getItemName() { return itemName; }
 }

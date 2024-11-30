@@ -3559,6 +3559,7 @@ MouseOutHandler, MouseWheelHandler {
 		String label = classToLabelMap.get(item);
 		if (label != null)
 		    toolbar.setModeLabel(label);
+		toolbar.highlightButton(mouseModeStr);
 
     		//		else if (s.length() > 0) {
     		//			try {
@@ -5526,8 +5527,8 @@ MouseOutHandler, MouseWheelHandler {
     			if (c==null)
     				return;
     			setMouseMode(MODE_ADD_ELM);
-			toolbar.setModeLabel(c);
     			mouseModeStr=c;
+			toolbar.highlightButton(mouseModeStr);
 			String label = classToLabelMap.get(c);
 			if (label != null)
 			    toolbar.setModeLabel(label);

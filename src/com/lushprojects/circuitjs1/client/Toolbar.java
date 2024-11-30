@@ -8,15 +8,31 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import com.lushprojects.circuitjs1.client.util.Locale;
 
+import java.util.HashMap;
+
 public class Toolbar extends HorizontalPanel {
 
     private Label modeLabel;
+    private HashMap<String, Label> highlightableButtons = new HashMap<>();
+    private Label activeButton;  // Currently active button
 
     final String wireIcon = "<svg width='24' height='24' viewBox='-5 0 110 50' xmlns='http://www.w3.org/2000/svg'>" +
                 "<line x1='5' y1='45' x2='95' y2='5' stroke='currentColor' stroke-width='8' />" +
                 "<circle cx='5' cy='45' r='10' fill='currentColor' />" +
                 "<circle cx='95' cy='5' r='10' fill='currentColor' />" +
             "</svg>";
+
+    final String resistorIcon = "<svg width='24' height='24'> <g transform='scale(.5,.5) translate(-544,-297)'>" +
+      "<path stroke='#000000' d=' M 544 320 L 552 320' stroke-width='3'/>" +
+      "<path stroke='#000000' d=' M 584 320 L 592 320' stroke-width='3'/>" +
+      "<g transform='matrix(1,0,0,1,552,320)'><path fill='none' stroke='currentColor' " +
+      "d=' M 0 0 L 2 6 L 6 -6 L 10 6 L 14 -6 L 18 6 L 22 -6 L 26 6 L 30 -6 L 32 0' stroke-width='2'/> </g> </g> </svg>";
+
+    final String groundIcon = "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' width='24' height='24'><defs /><g transform='scale(.6) translate(-826.46,-231.31) scale(1.230769)'><path fill='none' stroke='currentColor' d=' M 688 192 L 688 208' stroke-linecap='round' stroke-width='3' /> <path fill='none' stroke='currentColor' d=' M 698 208 L 678 208' stroke-linecap='round' stroke-width='3' /><path fill='none' stroke='currentColor' d=' M 694 213 L 682 213' stroke-linecap='round' stroke-width='3' /><path fill='none' stroke='currentColor' d=' M 690 218 L 686 218' stroke-linecap='round' stroke-width='3' /><path fill='currentColor' stroke='currentColor' d=' M 691 192 A 3 3 0 1 1 690.9997392252899 191.96044522459943 Z' /> </g></svg>";
+
+    final String capacitorIcon = "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' width='24' height='24'><defs /><g transform='translate(-323.76,-71.18) scale(0.470588)'><path fill='none' stroke='currentColor' d=' M 688 176 L 708 176' stroke-linecap='round' stroke-width='3' /><path fill='none' stroke='currentColor' d=' M 708 164 L 708 188' stroke-linecap='round' stroke-width='3' /><path fill='none' stroke='currentColor' d=' M 736 176 L 716 176' stroke-linecap='round' stroke-width='3' /><path fill='none' stroke='currentColor' d=' M 716 164 L 716 188' stroke-linecap='round' stroke-width='3' /><path fill='currentColor' stroke='currentColor' d=' M 691 176 A 3 3 0 1 1 690.9997392252899 175.96044522459943 Z' /><path fill='currentColor' stroke='currentColor' d=' M 739 176 A 3 3 0 1 1 738.9997392252899 175.96044522459943 Z' /></g></svg>";
+
+    final String diodeIcon = "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' width='24' height='24'><defs /><g transform='translate(-323.76,-72.06) scale(0.470588)'><path fill='none' stroke='currentColor' d=' M 688 176 L 704 176' stroke-linecap='round' stroke-width='3' /><path fill='none' stroke='currentColor' d=' M 720 176 L 736 176' stroke-linecap='round' stroke-width='3' /><path fill='currentColor' stroke='currentColor' d=' M 704 168 L 704 184 L 720 176 Z' /><path fill='none' stroke='currentColor' d=' M 720 168 L 720 184' stroke-linecap='round' stroke-width='3' /><path fill='currentColor' stroke='currentColor' d=' M 691 176 A 3 3 0 1 1 690.9997392252899 175.96044522459943 Z' /><path fill='currentColor' stroke='currentColor' d=' M 739 176 A 3 3 0 1 1 738.9997392252899 175.96044522459943 Z' /></g></svg>";
 
     public Toolbar() {
         // Set the overall style of the toolbar
@@ -40,6 +56,10 @@ public class Toolbar extends HorizontalPanel {
 	add(createIconButton("zoom-in", "Zoom In", new MyCommand("zoom", "zoomin")));
 	add(createIconButton("zoom-out", "Zoom Out", new MyCommand("zoom", "zoomout")));
 	add(createIconButton(wireIcon, "Wire", new MyCommand("main", "WireElm")));
+	add(createIconButton(resistorIcon, "Resistor", new MyCommand("main", "ResistorElm")));
+	add(createIconButton(groundIcon, "Ground", new MyCommand("main", "GroundElm")));
+	add(createIconButton(capacitorIcon, "Capacitor", new MyCommand("main", "CapacitorElm")));
+	add(createIconButton(diodeIcon, "Diode", new MyCommand("main", "DiodeElm")));
 
         // Spacer to push the mode label to the right
         HorizontalPanel spacer = new HorizontalPanel();
@@ -50,6 +70,8 @@ public class Toolbar extends HorizontalPanel {
         modeLabel = new Label("");
         styleModeLabel(modeLabel);
         add(modeLabel);
+
+        highlightButton("WireElm");  // Make "WireElm" the active button initially
     }
 
     public void setModeLabel(String text) { modeLabel.setText(Locale.LS("Mode: ") + text); }
@@ -86,6 +108,10 @@ public class Toolbar extends HorizontalPanel {
             }
         });
 
+        // Track buttons that belong to the "main" command group
+        if (command.getMenuName().equals("main"))
+            highlightableButtons.put(command.getItemName(), iconLabel);
+
         return iconLabel;
     }
 
@@ -95,5 +121,22 @@ public class Toolbar extends HorizontalPanel {
         style.setColor("#333");
         style.setPaddingRight(10, Style.Unit.PX);
     }
+
+    public void highlightButton(String key) {
+        // Deactivate the currently active button
+        if (activeButton != null) {
+            activeButton.getElement().getStyle().setColor("#333"); // Reset color
+            activeButton.getElement().getStyle().setBackgroundColor(null);
+        }
+
+        // Activate the new button
+        Label newActiveButton = highlightableButtons.get(key);
+        if (newActiveButton != null) {
+            newActiveButton.getElement().getStyle().setColor("#007bff"); // Active color
+            newActiveButton.getElement().getStyle().setBackgroundColor("#e6f7ff");
+            activeButton = newActiveButton;
+        }
+    }
+
 }
 
