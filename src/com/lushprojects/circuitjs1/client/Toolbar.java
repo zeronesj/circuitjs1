@@ -116,11 +116,13 @@ public class Toolbar extends HorizontalPanel {
 
         // Style the icon button
 	Style style = iconLabel.getElement().getStyle();
-        style.setFontSize(20, Style.Unit.PX);
+        style.setFontSize(24, Style.Unit.PX);
         style.setColor("#333");
-        style.setPadding(5, Style.Unit.PX);
+        style.setPadding(1, Style.Unit.PX);
         style.setMarginRight(5, Style.Unit.PX);
         style.setCursor(Style.Cursor.POINTER);
+	if (iconClass.startsWith("<svg"))
+	    style.setPaddingTop(5, Style.Unit.PX);
 
         // Add hover effect for the button
         iconLabel.addMouseOverHandler(event -> iconLabel.getElement().getStyle().setColor("#007bff"));
