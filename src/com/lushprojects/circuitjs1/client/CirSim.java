@@ -614,6 +614,7 @@ MouseOutHandler, MouseWheelHandler {
 	m.addItem(euroResistorCheckItem = new CheckboxMenuItem(Locale.LS("European Resistors"),
 		new Command() { public void execute(){
 		    setOptionInStorage("euroResistors", euroResistorCheckItem.getState());
+		    toolbar.setEuroResistors(euroResistorCheckItem.getState());
 		}
 	}));
 	euroResistorCheckItem.setState(euroSetting);
@@ -672,6 +673,7 @@ MouseOutHandler, MouseWheelHandler {
 	DOM.appendChild(layoutPanel.getElement(), topPanelCheckboxLabel);	
 
 	toolbar = new Toolbar();
+	toolbar.setEuroResistors(euroSetting);
 	if (!hideMenu)
 	    layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
 	layoutPanel.addNorth(toolbar, TOOLBARHEIGHT);
