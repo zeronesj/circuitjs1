@@ -235,11 +235,10 @@ public class Toolbar extends HorizontalPanel {
 	resistorButton.getElement().setInnerHTML(makeSvg(euro ? euroResistorIcon : resistorIcon, 24));
     }
 
-    final String wireIcon = "<svg><g transform='scale(0.208) translate(5, 0)'>" +
-                "<line x1='5' y1='45' x2='95' y2='5' stroke='currentColor' stroke-width='8' />" +
-                "<circle cx='5' cy='45' r='10' fill='currentColor' />" +
-                "<circle cx='95' cy='5' r='10' fill='currentColor' />" +
-            "</g></svg>";
+    final String wireIcon = "<svg><g transform='scale(0.208) translate(7.5, 32)'>" +
+           "<line x1='5' y1='45' x2='95' y2='5' stroke='currentColor' stroke-width='8' /> " +
+           "<circle cx='5' cy='45' r='10' fill='currentColor' /><circle cx='95' cy='5' r='10' fill='currentColor' /> " +
+           "</g></svg>";
 
     final String resistorIcon = "<svg> <g transform='scale(.5,.5) translate(-544,-297)'>" +
       "<path stroke='#000000' d=' M 544 320 L 552 320' stroke-width='3'/>" +
