@@ -1492,7 +1492,7 @@ MouseOutHandler, MouseWheelHandler {
         if (needsStamp && simRunning) {
             perfmon.startContext("stampCircuit()");
             try {
-                stampCircuit();
+                preStampAndStampCircuit();
             } catch (Exception e) {
                 stop("Exception in stampCircuit()", null);
 		GWT.log("Exception in stampCircuit", e);
@@ -2417,6 +2417,7 @@ MouseOutHandler, MouseWheelHandler {
 	needsStamp = true;
     }
 
+    // do the rest of the pre-stamp circuit analysis
     boolean preStampCircuit() {
 	int i, j;
 	nodeList = new Vector<CircuitNode>();
@@ -2476,8 +2477,8 @@ MouseOutHandler, MouseWheelHandler {
 	return true;
     }
 
-    // stamp the matrix, meaning populate the matrix as required to simulate the circuit (for all linear elements, at least)
-    void stampCircuit() {
+    // do pre-stamping and then stamp circuit
+    void preStampAndStampCircuit() {
 	int i;
 
 	// preStampCircuit returns false if there's an error.  It can return false if we have capacitor loops
@@ -2492,6 +2493,13 @@ MouseOutHandler, MouseWheelHandler {
 	    return;
 	}
 
+	stampCircuit();
+    }
+
+    // stamp the matrix, meaning populate the matrix as required to simulate the circuit (for all linear elements, at least).
+    // this gets called after something changes in the circuit, and also when auto-adjusting timestep
+    void stampCircuit() {
+	int i;
 	int matrixSize = nodeList.size()-1 + voltageSourceCount;
 	circuitMatrix = new double[matrixSize][matrixSize];
 	circuitRightSide = new double[matrixSize];
