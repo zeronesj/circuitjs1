@@ -213,6 +213,7 @@ public class Toolbar extends HorizontalPanel {
         style.setFontSize(16, Style.Unit.PX);
         style.setColor("#333");
         style.setPaddingRight(10, Style.Unit.PX);
+	style.setProperty("whiteSpace", "nowrap");
     }
 
     public void highlightButton(String key) {
