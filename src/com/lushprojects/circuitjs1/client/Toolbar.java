@@ -78,8 +78,6 @@ public class Toolbar extends HorizontalPanel {
         modeLabel = new Label("");
         styleModeLabel(modeLabel);
         add(modeLabel);
-
-        highlightButton("WireElm");  // Make "WireElm" the active button initially
     }
 
     public void setModeLabel(String text) { modeLabel.setText(Locale.LS("Mode: ") + text); }
