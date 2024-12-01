@@ -86,11 +86,8 @@ public class Toolbar extends HorizontalPanel {
         // Create a label to hold the icon
         Label iconLabel = new Label();
         iconLabel.setText(""); // No text, just an icon
-	if (iconClass.startsWith("<svg")) {
+	if (iconClass.startsWith("<svg"))
 	    iconLabel.getElement().setInnerHTML(makeSvg(iconClass, 24));
-	CirSim.console(makeSvg(iconClass, 34));
-}
-
         else
 	    iconLabel.getElement().addClassName("cirjsicon-" + iconClass);
         iconLabel.setTitle(Locale.LS(tooltip));
