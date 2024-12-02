@@ -28,6 +28,8 @@ class CapacitorElm extends CircuitElm {
 	int capNode2;
 	Point plate1[], plate2[];
 	public static final int FLAG_BACK_EULER = 2;
+	public static final int FLAG_RESISTANCE = 4;
+
 	public CapacitorElm(int xx, int yy) {
 	    super(xx, yy);
 	    capacitance = 1e-5;
@@ -41,7 +43,10 @@ class CapacitorElm extends CircuitElm {
 	    initialVoltage = 1e-3;
 	    try {
 		initialVoltage = new Double(st.nextToken()).doubleValue();
-		seriesResistance = new Double(st.nextToken()).doubleValue();
+		if ((flags & FLAG_RESISTANCE) != 0)
+		    seriesResistance = new Double(st.nextToken()).doubleValue();
+
+		// if you add more things here, check PolarCapacitorElm.  It loads more state after this
 	    } catch (Exception e) {}
 	}
 	boolean isTrapezoidal() { return (flags & FLAG_BACK_EULER) == 0; }
@@ -57,7 +62,9 @@ class CapacitorElm extends CircuitElm {
 	    voltdiff = current = curcount = curSourceValue = 0;
 	}
 	int getDumpType() { return 'c'; }
+
 	String dump() {
+	    flags |= FLAG_RESISTANCE;
 	    return super.dump() + " " + capacitance + " " + voltdiff + " " + initialVoltage + " " + seriesResistance;
 	}
 	
