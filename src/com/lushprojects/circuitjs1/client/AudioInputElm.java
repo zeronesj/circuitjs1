@@ -104,12 +104,14 @@ class AudioInputElm extends RailElm {
 		return 0;
 	    if (timeOffset < startPosition)
 		timeOffset = startPosition;
-	    int ptr = (int) (timeOffset * samplingRate);
-	    if (ptr >= data.length()) {
-		ptr = 0;
-		timeOffset = 0;
-	    }
-	    return data.get(ptr) * maxVoltage;
+	    double dptr = (timeOffset * samplingRate);
+	    int iptr = (int) dptr;
+	    double frac = dptr-iptr;
+	    if (iptr >= data.length())
+		return 0;
+	    double value1 = data.get(iptr);
+	    double value2 = (iptr+1 < data.length()) ? data.get(iptr+1) : 0;
+	    return (value1*(1-frac)+value2*frac) * maxVoltage;
 	}
 	
 	void stepFinished() {
