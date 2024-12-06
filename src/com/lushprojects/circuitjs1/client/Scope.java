@@ -1937,6 +1937,7 @@ class Scope {
     	    // old-style dump
     	    CircuitElm yElm = null;
     	    int ivalue = 0;
+	    manDivisions = 8;
     	    try {
     		position = new Integer(st.nextToken()).intValue();
     		int ye = -1;
