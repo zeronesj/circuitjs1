@@ -136,7 +136,7 @@ package com.lushprojects.circuitjs1.client;
 		    Object o = sim.elmList.elementAt(i);
 		    if (o instanceof Switch2Elm) {
 			Switch2Elm s2 = (Switch2Elm) o;
-			if (s2.link == link)
+			if (s2.link == link && position < s2.posCount)
 			    s2.position = position;
 		    }
 		}
