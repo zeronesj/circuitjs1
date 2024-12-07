@@ -546,6 +546,12 @@ class TransistorElm extends CircuitElm {
 		badIters = 0;
         }
 
+	void flipX(int c2) {
+	    if (x == x2)
+		flags ^= FLAG_FLIP;
+	    super.flipX(c2);
+	}
+
 	boolean canViewInScope() { return true; }
 	
 	double getCurrentIntoNode(int n) {

@@ -466,6 +466,14 @@ abstract class ChipElm extends CircuitElm {
 	    return s;
 	}
 	
+	void flipX(int center2) {
+	    flags ^= FLAG_FLIP_X;
+	    int xs = (flippedSizeX+1)*cspc2;
+	    x  = center2-x - xs;
+	    x2 = center2-x2;
+	    setPoints();
+	}
+
 	class Pin {
 	    Pin(int p, int s, String t) {
 		pos = p; side0 = side = s; text = t;

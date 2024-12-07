@@ -117,6 +117,14 @@ public class CustomCompositeElm extends CompositeElm {
 	updateModels(null);
     }
     
+    void flipX(int center2) {
+	flags ^= ChipElm.FLAG_FLIP_X;
+	int xs = (chip.flippedSizeX+1)*chip.cspc2;
+	x  = center2-x - xs;
+	x2 = center2-x2;
+	setPoints();
+    }
+
     public void updateModels(StringTokenizer st) {
 	model = CustomCompositeModel.getModelWithName(modelName);
 	if (model == null)

@@ -226,5 +226,10 @@ class TriStateElm extends CircuitElm {
 	if (n == 3)
             highVoltage = GateElm.lastHighVoltage = ei.value;
     }
+
+    void flipX(int c2) {
+	flags ^= FLAG_FLIP;
+	super.flipX(c2);
+    }
 }
 

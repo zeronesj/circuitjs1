@@ -22,6 +22,7 @@ package com.lushprojects.circuitjs1.client;
 class AnalogSwitchElm extends CircuitElm {
     final int FLAG_INVERT = 1;
     final int FLAG_PULLDOWN = 2;
+    final int FLAG_FLIPPED = 4;
     double resistance, r_on, r_off, threshold;
     public AnalogSwitchElm(int xx, int yy) {
 	super(xx, yy);
@@ -50,6 +51,7 @@ class AnalogSwitchElm extends CircuitElm {
     
     int getDumpType() { return 159; }
     boolean open;
+    int openhs;
 	
     Point ps, point3, lead3;
     void setPoints() {
@@ -57,13 +59,19 @@ class AnalogSwitchElm extends CircuitElm {
 	calcLeads(32);
 	adjustLeadsToGrid();
 	ps = new Point();
-	int openhs = 16;
+	openhs = (isFlipped()) ? -16 : 16;
 	point3 = interpPoint(lead1, lead2, .5, -openhs);
 	lead3  = interpPoint(lead1, lead2, .5, -openhs/2);
     }
 	
+    boolean isFlipped() { return (flags & FLAG_FLIPPED) != 0; }
+
+    void flipX(int c2) {
+	flags ^= FLAG_FLIPPED;
+	super.flipX(c2);
+    }
+
     void draw(Graphics g) {
-	int openhs = 16;
 	int hs = (open) ? openhs : 0;
 	setBbox(point1, point2, openhs);
 

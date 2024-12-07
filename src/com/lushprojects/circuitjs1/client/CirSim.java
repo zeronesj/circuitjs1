@@ -558,6 +558,7 @@ MouseOutHandler, MouseWheelHandler {
 	m.addItem(menuItemWithShortcut("zoom-11", "Zoom 100%", "0", new MyCommand("zoom", "zoom100")));
 	m.addItem(menuItemWithShortcut("zoom-in", "Zoom In", "+", new MyCommand("zoom", "zoomin")));
 	m.addItem(menuItemWithShortcut("zoom-out", "Zoom Out", "-", new MyCommand("zoom", "zoomout")));
+	m.addItem(iconMenuItem("target", "Flip X", new MyCommand("edit", "flipx")));
 	menuBar.addItem(Locale.LS("Edit"),m);
 
 	MenuBar drawMenuBar = new MenuBar(true);
@@ -3407,6 +3408,10 @@ MouseOutHandler, MouseWheelHandler {
     		pushUndo();
     		centreCircuit();
     	}
+    	if (item=="flipx") {
+    		pushUndo();
+    		flipX();
+    	}
     	if (item=="stackAll")
     		stackAll();
     	if (item=="unstackAll")
@@ -5122,6 +5127,27 @@ MouseOutHandler, MouseWheelHandler {
     		clearSelection();
     		menuElm.setSelected(true);
     	}
+    }
+
+    void flipX() {
+    	int i;
+    	pushUndo();
+    	setMenuSelection();
+    	int minx = 30000, maxx = -30000;
+    	for (i = 0; i != elmList.size(); i++) {
+	    CircuitElm ce = getElm(i);
+	    if (ce.isSelected()) {
+		minx = min(ce.x, min(ce.x2, minx));
+		maxx = max(ce.x, max(ce.x2, maxx));
+	    }
+    	}
+	int center2 = minx+maxx;
+	for (i = 0; i < elmList.size(); i++) {
+	    CircuitElm ce = getElm(i);
+	    if (ce.isSelected())
+		ce.flipX(center2);
+    	}
+	needAnalyze();
     }
 
     void doCut() {

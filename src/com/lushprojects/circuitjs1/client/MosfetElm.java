@@ -535,4 +535,10 @@ class MosfetElm extends CircuitElm {
 		return ids + diodeCurrent1;
 	    return -ids + diodeCurrent2;
 	}
+
+        void flipX(int c2) {
+            if (x == x2)
+                flags ^= FLAG_FLIP;
+            super.flipX(c2);
+        }
     }

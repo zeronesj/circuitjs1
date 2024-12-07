@@ -126,6 +126,14 @@ public class OptocouplerElm extends CompositeElm {
 
     boolean isFlippedX() { return (flags & ChipElm.FLAG_FLIP_X) != 0; }
 
+    void flipX(int center2) {
+	flags ^= ChipElm.FLAG_FLIP_X;
+	int xs = 3*cspc2;
+	x  = center2-x - xs;
+	x2 = center2-x2;
+	setPoints();
+    }
+
     void setPin(int n, int px, int py, int dx, int dy, int dax, int day, int sx, int sy) {
 	int pos = n % 2; 
 	if (isFlippedX()) {

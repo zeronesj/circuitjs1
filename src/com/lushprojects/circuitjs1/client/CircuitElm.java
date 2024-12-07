@@ -540,6 +540,12 @@ public abstract class CircuitElm implements Editable {
     	setPoints();
     }
     
+    void flipX(int center2) {
+	x =  center2-x;
+	x2 = center2-x2;
+	setPoints();
+    }
+
     void drawPosts(Graphics g) {
 	// we normally do this in updateCircuit() now because the logic is more complicated.
 	// we only handle the case where we have to draw all the posts.  That happens when
