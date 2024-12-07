@@ -494,9 +494,9 @@ MouseOutHandler, MouseWheelHandler {
 	fileMenuBar.addItem(exportAsUrlItem);
 	exportAsTextItem = iconMenuItem("export", "Export As Text...", new MyCommand("file","exportastext"));
 	fileMenuBar.addItem(exportAsTextItem);
-	fileMenuBar.addItem(iconMenuItem("export", "Export As Image...", new MyCommand("file","exportasimage")));
-	fileMenuBar.addItem(iconMenuItem("export", "Copy Circuit Image to Clipboard", new MyCommand("file","copypng")));
-	fileMenuBar.addItem(iconMenuItem("export", "Export As SVG...", new MyCommand("file","exportassvg")));    	
+	fileMenuBar.addItem(iconMenuItem("image", "Export As Image...", new MyCommand("file","exportasimage")));
+	fileMenuBar.addItem(iconMenuItem("image", "Copy Circuit Image to Clipboard", new MyCommand("file","copypng")));
+	fileMenuBar.addItem(iconMenuItem("image", "Export As SVG...", new MyCommand("file","exportassvg")));    	
 	fileMenuBar.addItem(iconMenuItem("microchip", "Create Subcircuit...", new MyCommand("file","createsubcircuit")));
 	fileMenuBar.addItem(iconMenuItem("magic", "Find DC Operating Point", new MyCommand("file", "dcanalysis")));
 	recoverItem = iconMenuItem("back-in-time", "Recover Auto-Save", new MyCommand("file","recover"));
@@ -559,8 +559,8 @@ MouseOutHandler, MouseWheelHandler {
 	m.addItem(menuItemWithShortcut("zoom-11", "Zoom 100%", "0", new MyCommand("zoom", "zoom100")));
 	m.addItem(menuItemWithShortcut("zoom-in", "Zoom In", "+", new MyCommand("zoom", "zoomin")));
 	m.addItem(menuItemWithShortcut("zoom-out", "Zoom Out", "-", new MyCommand("zoom", "zoomout")));
-	m.addItem(flipXItem = iconMenuItem("target", "Flip X", new MyCommand("edit", "flipx")));
-	m.addItem(flipYItem = iconMenuItem("target", "Flip Y", new MyCommand("edit", "flipy")));
+	m.addItem(flipXItem = iconMenuItem("flip-x", "Flip X", new MyCommand("edit", "flipx")));
+	m.addItem(flipYItem = iconMenuItem("flip-y", "Flip Y", new MyCommand("edit", "flipy")));
 	menuBar.addItem(Locale.LS("Edit"),m);
 
 	MenuBar drawMenuBar = new MenuBar(true);
