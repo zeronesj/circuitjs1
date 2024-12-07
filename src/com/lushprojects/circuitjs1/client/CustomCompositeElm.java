@@ -137,8 +137,16 @@ public class CustomCompositeElm extends CompositeElm {
 	setPoints();
     }
 
+    boolean isFlippedX() { return (flags & ChipElm.FLAG_FLIP_X) != 0; }
+    boolean isFlippedY() { return (flags & ChipElm.FLAG_FLIP_Y) != 0; }
+
     void flipXY(int xmy, int count) {
 	flags ^= ChipElm.FLAG_FLIP_XY;
+
+        // FLAG_FLIP_XY is applied first.  So need to swap X and Y
+        if (isFlippedX() != isFlippedY())
+            flags ^= ChipElm.FLAG_FLIP_X|ChipElm.FLAG_FLIP_Y;
+
 	if (count != 1) {
 	    x += chip.cspc2;
 	    super.flipXY(xmy, count);
