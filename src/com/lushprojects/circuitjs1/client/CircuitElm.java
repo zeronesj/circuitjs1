@@ -548,12 +548,24 @@ public abstract class CircuitElm implements Editable {
     void flipX(int center2, int count) {
 	x =  center2-x;
 	x2 = center2-x2;
+	initBoundingBox();
 	setPoints();
     }
 
     void flipY(int center2, int count) {
 	y =  center2-y;
 	y2 = center2-y2;
+	initBoundingBox();
+	setPoints();
+    }
+
+    void flipXY(int xmy, int count) {
+	int nx = y+xmy;
+	int ny = x-xmy;
+	int nx2 = y2+xmy;
+	int ny2 = x2-xmy;
+	x = nx; y = ny; x2 = nx2; y2 = ny2;
+	initBoundingBox();
 	setPoints();
     }
 
@@ -1091,6 +1103,7 @@ public abstract class CircuitElm implements Editable {
     boolean canViewInScope() { return getPostCount() <= 2; }
     boolean canFlipX() { return true; }
     boolean canFlipY() { return true; }
+    boolean canFlipXY() { return canFlipX() || canFlipY(); }
     boolean comparePair(int x1, int x2, int y1, int y2) {
 	return ((x1 == y1 && x2 == y2) || (x1 == y2 && x2 == y1));
     }

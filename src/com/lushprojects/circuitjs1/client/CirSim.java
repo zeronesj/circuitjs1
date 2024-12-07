@@ -114,7 +114,7 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem importFromLocalFileItem, importFromTextItem, exportAsUrlItem, exportAsLocalFileItem, exportAsTextItem,
             printItem, recoverItem, saveFileItem;
     MenuItem importFromDropboxItem;
-    MenuItem undoItem, redoItem, cutItem, copyItem, pasteItem, selectAllItem, optionsItem, flipXItem, flipYItem;
+    MenuItem undoItem, redoItem, cutItem, copyItem, pasteItem, selectAllItem, optionsItem, flipXItem, flipYItem, flipXYItem;
     MenuBar optionsMenuBar;
     CheckboxMenuItem dotsCheckItem;
     CheckboxMenuItem voltsCheckItem;
@@ -145,8 +145,7 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem elmAddScopeMenuItem;
     MenuItem elmSplitMenuItem;
     MenuItem elmSliderMenuItem;
-    MenuItem elmFlipXMenuItem;
-    MenuItem elmFlipYMenuItem;
+    MenuItem elmFlipXMenuItem, elmFlipYMenuItem, elmFlipXYMenuItem;
     MenuItem stackAllItem;
     MenuItem unstackAllItem;
     MenuItem combineAllItem;
@@ -561,6 +560,7 @@ MouseOutHandler, MouseWheelHandler {
 	m.addItem(menuItemWithShortcut("zoom-out", "Zoom Out", "-", new MyCommand("zoom", "zoomout")));
 	m.addItem(flipXItem = iconMenuItem("flip-x", "Flip X", new MyCommand("edit", "flipx")));
 	m.addItem(flipYItem = iconMenuItem("flip-y", "Flip Y", new MyCommand("edit", "flipy")));
+	m.addItem(flipXYItem = iconMenuItem("flip-x-y", "Flip XY", new MyCommand("edit", "flipxy")));
 	menuBar.addItem(Locale.LS("Edit"),m);
 
 	MenuBar drawMenuBar = new MenuBar(true);
@@ -820,6 +820,7 @@ MouseOutHandler, MouseWheelHandler {
 	elmMenuBar.addItem(                    new MenuItem(Locale.LS("Duplicate"),new MyCommand("elm","duplicate")));
 	elmMenuBar.addItem(elmFlipXMenuItem =  new MenuItem(Locale.LS("Flip X"),new MyCommand("elm","flipx")));
 	elmMenuBar.addItem(elmFlipYMenuItem =  new MenuItem(Locale.LS("Flip Y"),new MyCommand("elm","flipy")));
+	elmMenuBar.addItem(elmFlipXYMenuItem =  new MenuItem(Locale.LS("Flip XY"),new MyCommand("elm","flipxy")));
 	elmMenuBar.addItem(elmSplitMenuItem = menuItemWithShortcut("", "Split Wire", Locale.LS(ctrlMetaKey + "click"), new MyCommand("elm","split")));
 	elmMenuBar.addItem(elmSliderMenuItem = new MenuItem(Locale.LS("Sliders..."),new MyCommand("elm","sliders")));
 
@@ -1957,6 +1958,7 @@ MouseOutHandler, MouseWheelHandler {
     void needAnalyze() {
 	analyzeFlag = true;
     	repaint();
+	enableDisableMenuItems();
     }
     
     Vector<CircuitNode> nodeList;
@@ -3420,6 +3422,10 @@ MouseOutHandler, MouseWheelHandler {
 	    pushUndo();
 	    flipY();
     	}
+    	if (item=="flipxy") {
+	    pushUndo();
+	    flipXY();
+    	}
     	if (item=="stackAll")
     		stackAll();
     	if (item=="unstackAll")
@@ -4479,19 +4485,22 @@ MouseOutHandler, MouseWheelHandler {
     void enableDisableMenuItems() {
 	boolean canFlipX = true;
 	boolean canFlipY = true;
-	int selCount = 0;
+	boolean canFlipXY = true;
+	int selCount = countSelected();
 	for (CircuitElm elm : elmList)
-	    if (elm.isSelected()) {
-		selCount++;
+	    if (elm.isSelected() || selCount == 0) {
 		if (!elm.canFlipX())
 		    canFlipX = false;
 		if (!elm.canFlipY())
 		    canFlipY = false;
+		if (!elm.canFlipXY())
+		    canFlipXY = false;
 	    }
 	cutItem.setEnabled(selCount > 0);
 	copyItem.setEnabled(selCount > 0);
-	flipXItem.setEnabled(selCount > 0 && canFlipX);
-	flipYItem.setEnabled(selCount > 0 && canFlipY);
+	flipXItem.setEnabled(canFlipX);
+	flipYItem.setEnabled(canFlipY);
+	flipXYItem.setEnabled(canFlipXY);
     }
 
     void setMouseElm(CircuitElm ce) {
@@ -4714,8 +4723,21 @@ MouseOutHandler, MouseWheelHandler {
     	    	    elmEditMenuItem .setEnabled(mouseElm.getEditInfo(0) != null);
     	    	    elmSplitMenuItem.setEnabled(canSplit(mouseElm));
     	    	    elmSliderMenuItem.setEnabled(sliderItemEnabled(mouseElm));
-    	    	    elmFlipXMenuItem.setEnabled(mouseElm.canFlipX());
-    	    	    elmFlipYMenuItem.setEnabled(mouseElm.canFlipY());
+		    boolean canFlipX = mouseElm.canFlipX();
+		    boolean canFlipY = mouseElm.canFlipY();
+		    boolean canFlipXY = mouseElm.canFlipXY();
+		    for (CircuitElm elm : elmList)
+			if (elm.isSelected()) {
+			    if (!elm.canFlipX())
+				canFlipX = false;
+			    if (!elm.canFlipY())
+				canFlipY = false;
+			    if (!elm.canFlipXY())
+				canFlipXY = false;
+			}
+    	    	    elmFlipXMenuItem.setEnabled(canFlipX);
+    	    	    elmFlipYMenuItem.setEnabled(canFlipY);
+    	    	    elmFlipXYMenuItem.setEnabled(canFlipXY);
     	    	    contextPanel=new PopupPanel(true);
     	    	    contextPanel.add(elmMenuBar);
     	    	    contextPanel.setPopupPosition(menuClientX, menuClientY);
@@ -5148,48 +5170,66 @@ MouseOutHandler, MouseWheelHandler {
     	}
     }
 
-    void flipX() {
+    int countSelected() {
+	int count = 0;
+	for (CircuitElm ce: elmList)
+	    if (ce.isSelected())
+		count++;
+	return count;
+    }
+
+    class FlipInfo { public int cx, cy, count; }
+
+    FlipInfo prepareFlip() {
     	int i;
     	pushUndo();
     	setMenuSelection();
     	int minx = 30000, maxx = -30000;
-	int count = 0;
+    	int miny = 30000, maxy = -30000;
+	int count = countSelected();
     	for (i = 0; i != elmList.size(); i++) {
 	    CircuitElm ce = getElm(i);
-	    if (ce.isSelected()) {
-		count++;
+	    if (ce.isSelected() || count == 0) {
 		minx = min(ce.x, min(ce.x2, minx));
 		maxx = max(ce.x, max(ce.x2, maxx));
+		miny = min(ce.y, min(ce.y2, miny));
+		maxy = max(ce.y, max(ce.y2, maxy));
 	    }
     	}
-	int center2 = minx+maxx;
-	for (i = 0; i < elmList.size(); i++) {
-	    CircuitElm ce = getElm(i);
-	    if (ce.isSelected())
-		ce.flipX(center2, count);
+	FlipInfo fi = new FlipInfo();
+	fi.cx = (minx+maxx)/2;
+	fi.cy = (miny+maxy)/2;
+	fi.count = count;	
+	return fi;
+    }
+
+    void flipX() {
+	FlipInfo fi = prepareFlip();
+	int center2 = fi.cx*2;
+	for (CircuitElm ce : elmList) {
+	    if (ce.isSelected() || fi.count == 0)
+		ce.flipX(center2, fi.count);
     	}
 	needAnalyze();
     }
 
     void flipY() {
-    	int i;
-    	pushUndo();
-    	setMenuSelection();
-    	int miny = 30000, maxy = -30000;
-	int count = 0;
-    	for (i = 0; i != elmList.size(); i++) {
-	    CircuitElm ce = getElm(i);
-	    if (ce.isSelected()) {
-		count++;
-		miny = min(ce.y, min(ce.y2, miny));
-		maxy = max(ce.y, max(ce.y2, maxy));
-	    }
+	FlipInfo fi = prepareFlip();
+	int center2 = fi.cy*2;
+	for (CircuitElm ce : elmList) {
+	    if (ce.isSelected() || fi.count == 0)
+		ce.flipY(center2, fi.count);
     	}
-	int center2 = miny+maxy;
-	for (i = 0; i < elmList.size(); i++) {
-	    CircuitElm ce = getElm(i);
-	    if (ce.isSelected())
-		ce.flipY(center2, count);
+	needAnalyze();
+    }
+
+    void flipXY() {
+	FlipInfo fi = prepareFlip();
+	int xmy = snapGrid(fi.cx-fi.cy);
+	console("xmy " + xmy + " grid " + gridSize + " " + fi.cx + " " + fi.cy);
+	for (CircuitElm ce : elmList) {
+	    if (ce.isSelected() || fi.count == 0)
+		ce.flipXY(xmy, fi.count);
     	}
 	needAnalyze();
     }

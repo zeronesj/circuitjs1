@@ -196,4 +196,20 @@ package com.lushprojects.circuitjs1.client;
 	boolean hasCenterOff() { return (flags & FLAG_CENTER_OFF) != 0 && throwCount == 2; }
 	
 	int getShortcut() { return 'S'; }
+
+	void flipX(int c2, int count) {
+	    super.flipX(c2, count);
+	    position = posCount-1-position;
+	}   
+		 
+	void flipY(int c2, int count) { 
+	    super.flipY(c2, count);
+	    position = posCount-1-position;
+	}
+
+	void flipXY(int c2, int count) {
+	    super.flipXY(c2, count);
+	    position = posCount-1-position;
+	}       
+
     }

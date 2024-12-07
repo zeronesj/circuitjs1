@@ -242,5 +242,10 @@ class TriStateElm extends CircuitElm {
 	flags ^= FLAG_FLIP|FLAG_FLIP_Y;
 	super.flipY(c2, count);
     }
+
+    void flipXY(int c2, int count) {
+	flags ^= FLAG_FLIP;
+	super.flipXY(c2, count);
+    }
 }
 

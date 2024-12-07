@@ -22,8 +22,14 @@ package com.lushprojects.circuitjs1.client;
 class AnalogSwitchElm extends CircuitElm {
     final int FLAG_INVERT = 1;
     final int FLAG_PULLDOWN = 2;
+
+    // Unfortunately we need all three flags to keep track of flipping.
+    // FLAG_FLIP_X/Y affect the rounding direction if the elm is an odd grid length.
+    // FLAG_FLIP does not.
     final int FLAG_FLIPPED_X = 4;
     final int FLAG_FLIPPED_Y = 8;
+    final int FLAG_FLIPPED = 16;
+
     double resistance, r_on, r_off, threshold;
     public AnalogSwitchElm(int xx, int yy) {
 	super(xx, yy);
@@ -60,13 +66,14 @@ class AnalogSwitchElm extends CircuitElm {
 	calcLeads(32);
 	adjustLeadsToGrid(isFlippedX(), isFlippedY());
 	ps = new Point();
-	openhs = (isFlippedX() != isFlippedY()) ? -16 : 16;
+	openhs = (isFlippedX() != isFlippedY()) != isFlipped() ? -16 : 16;
 	point3 = interpPoint(lead1, lead2, .5, -openhs);
 	lead3  = interpPoint(lead1, lead2, .5, -openhs/2);
     }
 	
     boolean isFlippedX() { return (flags & FLAG_FLIPPED_X) != 0; }
     boolean isFlippedY() { return (flags & FLAG_FLIPPED_Y) != 0; }
+    boolean isFlipped () { return (flags & FLAG_FLIPPED  ) != 0; }
 
     void flipX(int c2, int count) {
 	flags ^= FLAG_FLIPPED_X;
@@ -76,6 +83,11 @@ class AnalogSwitchElm extends CircuitElm {
     void flipY(int c2, int count) {
 	flags ^= FLAG_FLIPPED_Y;
 	super.flipY(c2, count);
+    }
+
+    void flipXY(int c2, int count) {
+	flags ^= FLAG_FLIPPED;
+	super.flipXY(c2, count);
     }
 
     void draw(Graphics g) {

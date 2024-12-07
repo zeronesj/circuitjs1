@@ -547,4 +547,9 @@ class MosfetElm extends CircuitElm {
                 flags ^= FLAG_FLIP;
             super.flipY(c2, count);
         }
+
+        void flipXY(int xmy, int count) {
+	    flags ^= FLAG_FLIP;
+            super.flipXY(xmy, count);
+        }
     }

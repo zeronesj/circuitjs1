@@ -450,7 +450,7 @@ abstract class ChipElm extends CircuitElm {
 	
 	void flipX(int center2, int count) {
 	    flags ^= FLAG_FLIP_X;
-	    if (count > 1) {
+	    if (count != 1) {
 		int xs = (flippedSizeX+1)*cspc2;
 		x  = center2-x - xs;
 		x2 = center2-x2;
@@ -460,10 +460,20 @@ abstract class ChipElm extends CircuitElm {
 
 	void flipY(int center2, int count) {
 	    flags ^= FLAG_FLIP_Y;
-	    if (count > 1) {
+	    if (count != 1) {
 		int ys = (flippedSizeY-1)*cspc2;
 		y  = center2-y - ys;
 		y2 = center2-y2;
+	    }
+	    setPoints();
+	}
+
+	void flipXY(int xmy, int count) {
+	    flags ^= FLAG_FLIP_XY;
+	    if (count != 1) {
+		x += cspc2;
+		super.flipXY(xmy, count);
+		x -= cspc2;
 	    }
 	    setPoints();
 	}

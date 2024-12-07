@@ -220,5 +220,6 @@ class SwitchElm extends CircuitElm {
         	flags |= FLAG_LABEL;
         }
     }
+
     int getShortcut() { return 's'; }
 }

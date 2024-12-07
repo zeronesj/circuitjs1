@@ -220,4 +220,9 @@ package com.lushprojects.circuitjs1.client;
 	    flip();
 	    super.flipY(c2, count);
 	}
+
+	void flipXY(int c2, int count) {
+	    flip();
+	    super.flipXY(c2, count);
+	}
     }

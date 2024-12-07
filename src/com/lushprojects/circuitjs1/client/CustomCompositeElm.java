@@ -119,7 +119,7 @@ public class CustomCompositeElm extends CompositeElm {
     
     void flipX(int center2, int count) {
 	flags ^= ChipElm.FLAG_FLIP_X;
-	if (count > 1) {
+	if (count != 1) {
 	    int xs = (chip.flippedSizeX+1)*chip.cspc2;
 	    x  = center2-x - xs;
 	    x2 = center2-x2;
@@ -129,10 +129,20 @@ public class CustomCompositeElm extends CompositeElm {
 
     void flipY(int center2, int count) {
 	flags ^= ChipElm.FLAG_FLIP_Y;
-	if (count > 1) {
+	if (count != 1) {
 	    int xs = (chip.flippedSizeY-1)*chip.cspc2;
 	    y  = center2-y - xs;
 	    y2 = center2-y2;
+	}
+	setPoints();
+    }
+
+    void flipXY(int xmy, int count) {
+	flags ^= ChipElm.FLAG_FLIP_XY;
+	if (count != 1) {
+	    x += chip.cspc2;
+	    super.flipXY(xmy, count);
+	    x -= chip.cspc2;
 	}
 	setPoints();
     }
