@@ -203,4 +203,21 @@ package com.lushprojects.circuitjs1.client;
 	
 	int getShortcut() { return 0; }
 
+	void flip() {
+	    if (dx == 0)
+		x = x2 = x - (int) (dpx1*openhs*3);
+	    if (dy == 0)
+		y = y2 = y - (int) (dpy1*openhs*3);
+	    position = 1-position;
+	}
+
+	void flipX(int c2, int count) {
+	    flip();
+	    super.flipX(c2, count);
+	}
+
+	void flipY(int c2, int count) {
+	    flip();
+	    super.flipY(c2, count);
+	}
     }

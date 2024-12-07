@@ -399,4 +399,6 @@ class ThreePhaseMotorElm extends CircuitElm {
 	if (ei.value > 0 && n==6)
 	    J = ei.value;
     }
+    boolean canFlipX() { return false; }
+    boolean canFlipY() { return false; }
 }

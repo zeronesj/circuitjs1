@@ -178,4 +178,6 @@ class WattmeterElm extends CircuitElm {
     boolean canViewInScope() { return true; }
     double getCurrent() { return currents[1]; }
     double getVoltageDiff() { return volts[2]-volts[0]; }
+    boolean canFlipX() { return false; }
+    boolean canFlipY() { return false; }
 }
