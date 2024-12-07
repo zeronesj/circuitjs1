@@ -212,4 +212,9 @@ package com.lushprojects.circuitjs1.client;
 		return -current;
 	   return 0;
 	}
+
+	void flipY(int c2, int count) {
+	    flags ^= FLAG_SWAP;
+	    super.flipY(c2, count);
+	}
     }

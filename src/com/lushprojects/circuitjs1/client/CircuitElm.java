@@ -293,11 +293,16 @@ public abstract class CircuitElm implements Editable {
     }
 
     // adjust leads so that the point exactly between them is a grid point (so we can place a terminal there)
-    void adjustLeadsToGrid() {
+    void adjustLeadsToGrid(boolean flipX, boolean flipY) {
         int cx = (point1.x+point2.x)/2;
         int cy = (point1.y+point2.y)/2;
-        int adjx = sim.snapGrid(cx)-cx;
-        int adjy = sim.snapGrid(cy)-cy;
+
+	// when flipping, it changes the rounding direction.  need to adjust for this
+	int roundx = (flipX) ? 1 : -1;
+	int roundy = (flipY) ? 1 : -1;
+
+        int adjx = sim.snapGrid(cx+roundx)-cx;
+        int adjy = sim.snapGrid(cy+roundy)-cy;
         lead1.move(adjx, adjy);
         lead2.move(adjx, adjy);
     }
@@ -540,9 +545,15 @@ public abstract class CircuitElm implements Editable {
     	setPoints();
     }
     
-    void flipX(int center2) {
+    void flipX(int center2, int count) {
 	x =  center2-x;
 	x2 = center2-x2;
+	setPoints();
+    }
+
+    void flipY(int center2, int count) {
+	y =  center2-y;
+	y2 = center2-y2;
 	setPoints();
     }
 

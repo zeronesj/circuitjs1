@@ -25,7 +25,13 @@ package com.lushprojects.circuitjs1.client;
 
 class TriStateElm extends CircuitElm {
     double resistance, r_on, r_off, r_off_ground, highVoltage;
+
+    // Unfortunately we need all three flags to keep track of flipping.
+    // FLAG_FLIP_X/Y affect the rounding direction if the elm is an odd grid length.
+    // FLAG_FLIP does not.
     final int FLAG_FLIP = 1;
+    final int FLAG_FLIP_X = 2;
+    final int FLAG_FLIP_Y = 4;
 
     public TriStateElm(int xx, int yy) {
 	super(xx, yy);
@@ -73,7 +79,7 @@ class TriStateElm extends CircuitElm {
 	super.setPoints();
 	int len = 32;
 	calcLeads(len);
-	adjustLeadsToGrid();
+	adjustLeadsToGrid((flags & FLAG_FLIP_X) != 0, (flags & FLAG_FLIP_Y) != 0);
 
 	ps = new Point();
 	int hs = 16;
@@ -227,9 +233,14 @@ class TriStateElm extends CircuitElm {
             highVoltage = GateElm.lastHighVoltage = ei.value;
     }
 
-    void flipX(int c2) {
-	flags ^= FLAG_FLIP;
-	super.flipX(c2);
+    void flipX(int c2, int count) {
+	flags ^= FLAG_FLIP|FLAG_FLIP_X;
+	super.flipX(c2, count);
+    }
+
+    void flipY(int c2, int count) {
+	flags ^= FLAG_FLIP|FLAG_FLIP_Y;
+	super.flipY(c2, count);
     }
 }
 

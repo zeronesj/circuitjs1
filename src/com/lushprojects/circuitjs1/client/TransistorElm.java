@@ -546,10 +546,20 @@ class TransistorElm extends CircuitElm {
 		badIters = 0;
         }
 
-	void flipX(int c2) {
+	void flipX(int c2, int count) {
 	    if (x == x2)
 		flags ^= FLAG_FLIP;
-	    super.flipX(c2);
+	    super.flipX(c2, count);
+	}
+
+	void flipY(int c2, int count) {
+	    if (y == y2)
+		flags ^= FLAG_FLIP;
+	    super.flipY(c2, count);
+	}
+	void setFlipped(boolean flip) {
+	    if (((flags & FLAG_FLIP) != 0) != flip)
+		flags ^= FLAG_FLIP;
 	}
 
 	boolean canViewInScope() { return true; }

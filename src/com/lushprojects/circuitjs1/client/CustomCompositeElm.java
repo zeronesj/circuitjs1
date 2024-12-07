@@ -117,11 +117,23 @@ public class CustomCompositeElm extends CompositeElm {
 	updateModels(null);
     }
     
-    void flipX(int center2) {
+    void flipX(int center2, int count) {
 	flags ^= ChipElm.FLAG_FLIP_X;
-	int xs = (chip.flippedSizeX+1)*chip.cspc2;
-	x  = center2-x - xs;
-	x2 = center2-x2;
+	if (count > 1) {
+	    int xs = (chip.flippedSizeX+1)*chip.cspc2;
+	    x  = center2-x - xs;
+	    x2 = center2-x2;
+	}
+	setPoints();
+    }
+
+    void flipY(int center2, int count) {
+	flags ^= ChipElm.FLAG_FLIP_Y;
+	if (count > 1) {
+	    int xs = (chip.flippedSizeY-1)*chip.cspc2;
+	    y  = center2-y - xs;
+	    y2 = center2-y2;
+	}
 	setPoints();
     }
 
@@ -170,20 +182,10 @@ public class CustomCompositeElm extends CompositeElm {
         }
         if (n == 2) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
-            ei.checkbox = new Checkbox("Flip X", (flags & ChipElm.FLAG_FLIP_X) != 0);
-            return ei;
-        }
-        if (n == 3) {
-            EditInfo ei = new EditInfo("", 0, -1, -1);
-            ei.checkbox = new Checkbox("Flip Y", (flags & ChipElm.FLAG_FLIP_Y) != 0);
-            return ei;
-        }
-        if (n == 4) {
-            EditInfo ei = new EditInfo("", 0, -1, -1);
             ei.checkbox = new Checkbox("Flip X/Y", (flags & ChipElm.FLAG_FLIP_XY) != 0);
             return ei;
         }
-        if (n == 5 && model.canLoadModelCircuit()) {
+        if (n == 3 && model.canLoadModelCircuit()) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
             ei.button = new Button(Locale.LS("Load Model Circuit"));
             return ei;
@@ -214,18 +216,10 @@ public class CustomCompositeElm extends CompositeElm {
             return;
         }
         if (n == 2) {
-            flags = ei.changeFlag(flags, ChipElm.FLAG_FLIP_X);
-            setPoints();
-        }
-        if (n == 3) {
-            flags = ei.changeFlag(flags, ChipElm.FLAG_FLIP_Y);
-            setPoints();
-        }
-        if (n == 4) {
             flags = ei.changeFlag(flags, ChipElm.FLAG_FLIP_XY);
             setPoints();
         }
-        if (n == 5) {
+        if (n == 3) {
             sim.readCircuit(model.modelCircuit);
             CirSim.editDialog.closeDialog();
         }

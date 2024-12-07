@@ -361,51 +361,33 @@ abstract class ChipElm extends CircuitElm {
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);
-		ei.checkbox = new Checkbox("Flip X", (flags & FLAG_FLIP_X) != 0);
-		return ei;
-	    }
-	    if (n == 1) {
-		EditInfo ei = new EditInfo("", 0, -1, -1);
-		ei.checkbox = new Checkbox("Flip Y", (flags & FLAG_FLIP_Y) != 0);
-		return ei;
-	    }
-	    if (n == 2) {
-		EditInfo ei = new EditInfo("", 0, -1, -1);
 		ei.checkbox = new Checkbox("Flip X/Y", (flags & FLAG_FLIP_XY) != 0);
 		return ei;
 	    }
 	    if (!isDigitalChip())
-		return getChipEditInfo(n-3);
+		return getChipEditInfo(n-1);
 	    
-	    if (n == 3)
+	    if (n == 1)
 		return new EditInfo("High Logic Voltage", highVoltage);
 	    
-	    return getChipEditInfo(n-4);
+	    return getChipEditInfo(n-2);
 	}
 	public void setEditValue(int n, EditInfo ei) {
 	    if (n == 0) {
-		flags = ei.changeFlag(flags, FLAG_FLIP_X);
-		setPoints();
-	    }
-	    if (n == 1) {
-		flags = ei.changeFlag(flags, FLAG_FLIP_Y);
-		setPoints();
-	    }
-	    if (n == 2) {
 		flags = ei.changeFlag(flags, FLAG_FLIP_XY);
 		setPoints();
 	    }
 	    if (!isDigitalChip()) {
-		if (n >= 3)
-		    setChipEditValue(n-3, ei);
+		if (n >= 1)
+		    setChipEditValue(n-1, ei);
 		return;
 	    }
 	    
-	    if (n == 3)
+	    if (n == 1)
 		highVoltage = ei.value;
 	    
-	    if (n >= 4)
-		setChipEditValue(n-4, ei);
+	    if (n >= 2)
+		setChipEditValue(n-2, ei);
 	}
 	
 	public EditInfo getChipEditInfo(int n) { return null; }
@@ -466,11 +448,23 @@ abstract class ChipElm extends CircuitElm {
 	    return s;
 	}
 	
-	void flipX(int center2) {
+	void flipX(int center2, int count) {
 	    flags ^= FLAG_FLIP_X;
-	    int xs = (flippedSizeX+1)*cspc2;
-	    x  = center2-x - xs;
-	    x2 = center2-x2;
+	    if (count > 1) {
+		int xs = (flippedSizeX+1)*cspc2;
+		x  = center2-x - xs;
+		x2 = center2-x2;
+	    }
+	    setPoints();
+	}
+
+	void flipY(int center2, int count) {
+	    flags ^= FLAG_FLIP_Y;
+	    if (count > 1) {
+		int ys = (flippedSizeY-1)*cspc2;
+		y  = center2-y - ys;
+		y2 = center2-y2;
+	    }
 	    setPoints();
 	}
 

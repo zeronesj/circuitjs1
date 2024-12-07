@@ -32,7 +32,7 @@ class AnalogSwitch2Elm extends AnalogSwitchElm {
     void setPoints() {
 	super.setPoints();
 	calcLeads(32);
-	adjustLeadsToGrid();
+	adjustLeadsToGrid(isFlippedX(), isFlippedY());
 	swposts = newPointArray(2);
 	swpoles = newPointArray(2);
 	interpPoint2(lead1,  lead2,  swpoles[0], swpoles[1], 1, openhs);
