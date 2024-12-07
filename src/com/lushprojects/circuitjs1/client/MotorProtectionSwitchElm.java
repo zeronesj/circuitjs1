@@ -273,4 +273,7 @@ class MotorProtectionSwitchElm extends CircuitElm {
 		return currents[n/2];
 	    return -currents[n/2];
 	}
+
+	boolean canFlipX() { return false; }
+	boolean canFlipY() { return false; }
     }

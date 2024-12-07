@@ -294,5 +294,6 @@ public class OpAmpRealElm extends CompositeElm {
 	    initModel();
 	}
     }
-    
+
+    boolean canFlipY() { return false; }    
 }

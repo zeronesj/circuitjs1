@@ -114,7 +114,7 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem importFromLocalFileItem, importFromTextItem, exportAsUrlItem, exportAsLocalFileItem, exportAsTextItem,
             printItem, recoverItem, saveFileItem;
     MenuItem importFromDropboxItem;
-    MenuItem undoItem, redoItem, cutItem, copyItem, pasteItem, selectAllItem, optionsItem;
+    MenuItem undoItem, redoItem, cutItem, copyItem, pasteItem, selectAllItem, optionsItem, flipXItem, flipYItem;
     MenuBar optionsMenuBar;
     CheckboxMenuItem dotsCheckItem;
     CheckboxMenuItem voltsCheckItem;
@@ -145,6 +145,8 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem elmAddScopeMenuItem;
     MenuItem elmSplitMenuItem;
     MenuItem elmSliderMenuItem;
+    MenuItem elmFlipXMenuItem;
+    MenuItem elmFlipYMenuItem;
     MenuItem stackAllItem;
     MenuItem unstackAllItem;
     MenuItem combineAllItem;
@@ -557,8 +559,8 @@ MouseOutHandler, MouseWheelHandler {
 	m.addItem(menuItemWithShortcut("zoom-11", "Zoom 100%", "0", new MyCommand("zoom", "zoom100")));
 	m.addItem(menuItemWithShortcut("zoom-in", "Zoom In", "+", new MyCommand("zoom", "zoomin")));
 	m.addItem(menuItemWithShortcut("zoom-out", "Zoom Out", "-", new MyCommand("zoom", "zoomout")));
-	m.addItem(iconMenuItem("target", "Flip X", new MyCommand("edit", "flipx")));
-	m.addItem(iconMenuItem("target", "Flip Y", new MyCommand("edit", "flipy")));
+	m.addItem(flipXItem = iconMenuItem("target", "Flip X", new MyCommand("edit", "flipx")));
+	m.addItem(flipYItem = iconMenuItem("target", "Flip Y", new MyCommand("edit", "flipy")));
 	menuBar.addItem(Locale.LS("Edit"),m);
 
 	MenuBar drawMenuBar = new MenuBar(true);
@@ -816,8 +818,8 @@ MouseOutHandler, MouseWheelHandler {
 	elmMenuBar.addItem(elmCopyMenuItem = new MenuItem(Locale.LS("Copy"),new MyCommand("elm","copy")));
 	elmMenuBar.addItem(elmDeleteMenuItem = new MenuItem(Locale.LS("Delete"),new MyCommand("elm","delete")));
 	elmMenuBar.addItem(                    new MenuItem(Locale.LS("Duplicate"),new MyCommand("elm","duplicate")));
-	elmMenuBar.addItem(                    new MenuItem(Locale.LS("Flip X"),new MyCommand("elm","flipx")));
-	elmMenuBar.addItem(                    new MenuItem(Locale.LS("Flip Y"),new MyCommand("elm","flipy")));
+	elmMenuBar.addItem(elmFlipXMenuItem =  new MenuItem(Locale.LS("Flip X"),new MyCommand("elm","flipx")));
+	elmMenuBar.addItem(elmFlipYMenuItem =  new MenuItem(Locale.LS("Flip Y"),new MyCommand("elm","flipy")));
 	elmMenuBar.addItem(elmSplitMenuItem = menuItemWithShortcut("", "Split Wire", Locale.LS(ctrlMetaKey + "click"), new MyCommand("elm","split")));
 	elmMenuBar.addItem(elmSliderMenuItem = new MenuItem(Locale.LS("Sliders..."),new MyCommand("elm","sliders")));
 
@@ -851,6 +853,7 @@ MouseOutHandler, MouseWheelHandler {
 
 	enableUndoRedo();
 	enablePaste();
+	enableDisableMenuItems();
 	setiFrameHeight();
 	cv.addMouseDownHandler(this);
 	cv.addMouseMoveHandler(this);
@@ -4470,17 +4473,27 @@ MouseOutHandler, MouseWheelHandler {
     		CircuitElm ce = getElm(i);
     		ce.selectRect(selectedArea, add);
     	}
+	enableDisableMenuItems();
     }
 
-//    void setSelectedElm(CircuitElm cs) {
-//    	int i;
-//    	for (i = 0; i != elmList.size(); i++) {
-//    		CircuitElm ce = getElm(i);
-//    		ce.setSelected(ce == cs);
-//    	}
-//    	mouseElm = cs;
-//    }
-    
+    void enableDisableMenuItems() {
+	boolean canFlipX = true;
+	boolean canFlipY = true;
+	int selCount = 0;
+	for (CircuitElm elm : elmList)
+	    if (elm.isSelected()) {
+		selCount++;
+		if (!elm.canFlipX())
+		    canFlipX = false;
+		if (!elm.canFlipY())
+		    canFlipY = false;
+	    }
+	cutItem.setEnabled(selCount > 0);
+	copyItem.setEnabled(selCount > 0);
+	flipXItem.setEnabled(selCount > 0 && canFlipX);
+	flipYItem.setEnabled(selCount > 0 && canFlipY);
+    }
+
     void setMouseElm(CircuitElm ce) {
     	if (ce!=mouseElm) {
     		if (mouseElm!=null)
@@ -4701,6 +4714,8 @@ MouseOutHandler, MouseWheelHandler {
     	    	    elmEditMenuItem .setEnabled(mouseElm.getEditInfo(0) != null);
     	    	    elmSplitMenuItem.setEnabled(canSplit(mouseElm));
     	    	    elmSliderMenuItem.setEnabled(sliderItemEnabled(mouseElm));
+    	    	    elmFlipXMenuItem.setEnabled(mouseElm.canFlipX());
+    	    	    elmFlipYMenuItem.setEnabled(mouseElm.canFlipY());
     	    	    contextPanel=new PopupPanel(true);
     	    	    contextPanel.add(elmMenuBar);
     	    	    contextPanel.setPopupPosition(menuClientX, menuClientY);
@@ -5422,6 +5437,7 @@ MouseOutHandler, MouseWheelHandler {
 	    CircuitElm ce = getElm(i);
 	    ce.setSelected(false);
 	}
+	enableDisableMenuItems();
     }
     
     void doSelectAll() {
@@ -5430,6 +5446,7 @@ MouseOutHandler, MouseWheelHandler {
     		CircuitElm ce = getElm(i);
     		ce.setSelected(true);
     	}
+	enableDisableMenuItems();
     }
     
     boolean anySelectedButMouse() {
