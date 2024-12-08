@@ -198,12 +198,7 @@ public class CustomCompositeElm extends CompositeElm {
             ei.button = new Button(Locale.LS("Edit Pin Layout"));
             return ei;
         }
-        if (n == 2) {
-            EditInfo ei = new EditInfo("", 0, -1, -1);
-            ei.checkbox = new Checkbox("Flip X/Y", (flags & ChipElm.FLAG_FLIP_XY) != 0);
-            return ei;
-        }
-        if (n == 3 && model.canLoadModelCircuit()) {
+        if (n == 2 && model.canLoadModelCircuit()) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
             ei.button = new Button(Locale.LS("Load Model Circuit"));
             return ei;
@@ -234,10 +229,6 @@ public class CustomCompositeElm extends CompositeElm {
             return;
         }
         if (n == 2) {
-            flags = ei.changeFlag(flags, ChipElm.FLAG_FLIP_XY);
-            setPoints();
-        }
-        if (n == 3) {
             sim.readCircuit(model.modelCircuit);
             CirSim.editDialog.closeDialog();
         }

@@ -361,35 +361,25 @@ abstract class ChipElm extends CircuitElm {
 	boolean isFlippedXY() { return hasFlag(FLAG_FLIP_XY); }
 	
 	public EditInfo getEditInfo(int n) {
-	    if (n == 0) {
-		EditInfo ei = new EditInfo("", 0, -1, -1);
-		ei.checkbox = new Checkbox("Flip X/Y", (flags & FLAG_FLIP_XY) != 0);
-		return ei;
-	    }
 	    if (!isDigitalChip())
-		return getChipEditInfo(n-1);
+		return getChipEditInfo(n);
 	    
-	    if (n == 1)
+	    if (n == 0)
 		return new EditInfo("High Logic Voltage", highVoltage);
 	    
-	    return getChipEditInfo(n-2);
+	    return getChipEditInfo(n-1);
 	}
 	public void setEditValue(int n, EditInfo ei) {
-	    if (n == 0) {
-		flags = ei.changeFlag(flags, FLAG_FLIP_XY);
-		setPoints();
-	    }
 	    if (!isDigitalChip()) {
-		if (n >= 1)
-		    setChipEditValue(n-1, ei);
+		setChipEditValue(n, ei);
 		return;
 	    }
 	    
-	    if (n == 1)
+	    if (n == 0)
 		highVoltage = ei.value;
 	    
-	    if (n >= 2)
-		setChipEditValue(n-2, ei);
+	    if (n >= 1)
+		setChipEditValue(n-1, ei);
 	}
 	
 	public EditInfo getChipEditInfo(int n) { return null; }
