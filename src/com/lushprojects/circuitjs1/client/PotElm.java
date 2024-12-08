@@ -27,6 +27,7 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 
 class PotElm extends CircuitElm implements Command, MouseWheelHandler {
     final int FLAG_SHOW_VALUES = 1;
+    final int FLAG_FLIP = 2;
 	double position, maxResistance, resistance1, resistance2;
 	double current1, current2, current3;
 	double curcount1, curcount2, curcount3;
@@ -95,32 +96,22 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
 	super.setPoints();
 	int offset = 0;
 	int myLen =0;
-	if (abs(dx) > abs(dy)) {
-	    myLen =  2 * sim.gridSize * Integer.signum(dx) * ((((Integer)Math.abs(dx))+ 2 * sim.gridSize -1) / (2 * sim.gridSize));
+	if (abs(dx) > abs(dy) != hasFlag(FLAG_FLIP)) {
+	    sim.console("s1");
+	    myLen =  2 * sim.gridSize * Integer.signum(dx) * ((((int)Math.abs(dx))+ 2 * sim.gridSize -1) / (2 * sim.gridSize));
 	    point2.x =  point1.x + myLen;
 	    offset = (dx < 0) ? dy : -dy;
 	    point2.y = point1.y;
 	} else {
-	    myLen =  2 * sim.gridSize * Integer.signum(dy) * ((((Integer)Math.abs(dy))+ 2 * sim.gridSize -1) / (2 * sim.gridSize));
+	    sim.console("s2");
+	    myLen =  2 * sim.gridSize * Integer.signum(dy) * ((((int)Math.abs(dy))+ 2 * sim.gridSize -1) / (2 * sim.gridSize));
 	    if (dy != 0) {
 		point2.y = point1.y + myLen;
 		offset = (dy > 0) ? dx : -dx;
 		point2.x = point1.x;
 	    }
 	}
-//	if (abs(dx) > abs(dy)) {
-//	    dx = Integer.signum(dx) * sim.snapGrid(Math.abs(dx) / 2) * 2;
-//	    point2.x = x2 = point1.x + dx;
-//	    offset = (dx < 0) ? dy : -dy;
-//	    point2.y = point1.y;
-//	} else {
-//	    dy = Integer.signum(dy) * sim.snapGrid(Math.abs(dy) / 2) * 2;
-//	    if (dy != 0) {
-//		point2.y = y2 = point1.y + dy;
-//		offset = (dy > 0) ? dx : -dx;
-//		point2.x = point1.x;
-//	    }
-//	}
+	sim.console("setpoints " + dx + " " + dy + " " + offset + " " + myLen + " " + hasFlag(FLAG_FLIP));
 	if (offset == 0)
 	    offset = sim.gridSize;
 	dn = distance(point1, point2);
@@ -335,6 +326,11 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
     public void onMouseWheel(MouseWheelEvent e) {
     	if (slider!=null)
     		slider.onMouseWheel(e);
+    }
+    void flipXY(int xmy, int count) {
+	if (abs(dx) == abs(dy))
+	    flags ^= FLAG_FLIP;
+	super.flipXY(xmy, count);
     }
 }
 
