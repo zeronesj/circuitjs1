@@ -3381,22 +3381,18 @@ MouseOutHandler, MouseWheelHandler {
     	    menuElm = mouseElm;
     	    menu = "elm";
     	}
-    	
+	if (menu != "elm")
+		menuElm = null;
+
     	if (item == "cut") {
-    		if (menu!="elm")
-    			menuElm = null;
     		doCut();
     	}
     	if (item == "copy") {
-    		if (menu!="elm")
-    			menuElm = null;
     		doCopy();
     	}
     	if (item=="paste")
     		doPaste(null);
     	if (item=="duplicate") {
-		if (menu!="elm")
-			menuElm = null;
     	    	doDuplicate();
     	}
     	if (item=="flip")
