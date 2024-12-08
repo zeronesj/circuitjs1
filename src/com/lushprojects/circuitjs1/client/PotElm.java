@@ -28,6 +28,8 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 class PotElm extends CircuitElm implements Command, MouseWheelHandler {
     final int FLAG_SHOW_VALUES = 1;
     final int FLAG_FLIP = 2;
+    final int FLAG_FLIP_OFFSET = 4;
+
 	double position, maxResistance, resistance1, resistance2;
 	double current1, current2, current3;
 	double curcount1, curcount2, curcount3;
@@ -97,13 +99,11 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
 	int offset = 0;
 	int myLen =0;
 	if (abs(dx) > abs(dy) != hasFlag(FLAG_FLIP)) {
-	    sim.console("s1");
 	    myLen =  2 * sim.gridSize * Integer.signum(dx) * ((((int)Math.abs(dx))+ 2 * sim.gridSize -1) / (2 * sim.gridSize));
 	    point2.x =  point1.x + myLen;
 	    offset = (dx < 0) ? dy : -dy;
 	    point2.y = point1.y;
 	} else {
-	    sim.console("s2");
 	    myLen =  2 * sim.gridSize * Integer.signum(dy) * ((((int)Math.abs(dy))+ 2 * sim.gridSize -1) / (2 * sim.gridSize));
 	    if (dy != 0) {
 		point2.y = point1.y + myLen;
@@ -111,9 +111,8 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
 		point2.x = point1.x;
 	    }
 	}
-	sim.console("setpoints " + dx + " " + dy + " " + offset + " " + myLen + " " + hasFlag(FLAG_FLIP));
 	if (offset == 0)
-	    offset = sim.gridSize;
+	    offset = (hasFlag(FLAG_FLIP_OFFSET)) ? -sim.gridSize : sim.gridSize;
 	dn = distance(point1, point2);
 	int bodyLen = 32;
 	calcLeads(bodyLen);
@@ -247,7 +246,6 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
 	    dpx = 0;
 	    dpy = -hs;
 	}
-	CirSim.console("dv " + dpx + " " + w);
 	if (dpx == 0)
 	    g.drawString(s, xc-w/2, yc-abs(dpy)-2);
 	else {
@@ -327,9 +325,19 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
     	if (slider!=null)
     		slider.onMouseWheel(e);
     }
+    void flipX(int c2, int count) {
+	// this is only needed / only has an effect if point1 and point2 are on same grid line
+	flags ^= FLAG_FLIP_OFFSET;
+	super.flipX(c2, count);
+    }
+    void flipY(int c2, int count) {
+	flags ^= FLAG_FLIP_OFFSET;
+	super.flipY(c2, count);
+    }
     void flipXY(int xmy, int count) {
 	if (abs(dx) == abs(dy))
 	    flags ^= FLAG_FLIP;
+	flags ^= FLAG_FLIP_OFFSET;
 	super.flipXY(xmy, count);
     }
 }
