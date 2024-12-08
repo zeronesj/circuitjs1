@@ -90,7 +90,7 @@ class AnalogSwitch2Elm extends AnalogSwitchElm {
     }
     void doStep() {
 	open = (volts[3] < threshold);
-	if ((flags & FLAG_INVERT) != 0)
+	if (hasFlag(FLAG_INVERT))
 	    open = !open;
 	if (open) {
 	    sim.stampResistor(nodes[0], nodes[2], r_on);

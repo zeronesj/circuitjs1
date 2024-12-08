@@ -71,9 +71,9 @@ class AnalogSwitchElm extends CircuitElm {
 	lead3  = interpPoint(lead1, lead2, .5, -openhs/2);
     }
 	
-    boolean isFlippedX() { return (flags & FLAG_FLIPPED_X) != 0; }
-    boolean isFlippedY() { return (flags & FLAG_FLIPPED_Y) != 0; }
-    boolean isFlipped () { return (flags & FLAG_FLIPPED  ) != 0; }
+    boolean isFlippedX() { return hasFlag(FLAG_FLIPPED_X); }
+    boolean isFlippedY() { return hasFlag(FLAG_FLIPPED_Y); }
+    boolean isFlipped () { return hasFlag(FLAG_FLIPPED  ); }
 
     void flipX(int c2, int count) {
 	flags ^= FLAG_FLIPPED_X;
@@ -117,7 +117,7 @@ class AnalogSwitchElm extends CircuitElm {
     // we need this to be able to change the matrix for each step
     boolean nonLinear() { return true; }
 
-    boolean needsPulldown() { return (flags & FLAG_PULLDOWN) != 0; }
+    boolean needsPulldown() { return hasFlag(FLAG_PULLDOWN); }
 
     void stamp() {
 	sim.stampNonLinear(nodes[0]);
@@ -130,7 +130,7 @@ class AnalogSwitchElm extends CircuitElm {
     }
     void doStep() {
 	open = (volts[2] < threshold);
-	if ((flags & FLAG_INVERT) != 0)
+	if (hasFlag(FLAG_INVERT))
 	    open = !open;
 
 	// if pulldown flag is set, resistance is r_on.  Otherwise, no connection.
@@ -167,8 +167,7 @@ class AnalogSwitchElm extends CircuitElm {
     public EditInfo getEditInfo(int n) {
 	if (n == 0) {
 	    EditInfo ei = new EditInfo("", 0, -1, -1);
-	    ei.checkbox = new Checkbox("Normally closed",
-				       (flags & FLAG_INVERT) != 0);
+	    ei.checkbox = new Checkbox("Normally closed", hasFlag(FLAG_INVERT));
 	    return ei;
 	}
 	if (n == 1)

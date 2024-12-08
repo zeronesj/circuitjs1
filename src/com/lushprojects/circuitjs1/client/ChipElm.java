@@ -356,9 +356,9 @@ abstract class ChipElm extends CircuitElm {
 	    return pins[n].current;
 	}
 	
-	boolean isFlippedX () { return (flags & FLAG_FLIP_X ) != 0; }
-	boolean isFlippedY () { return (flags & FLAG_FLIP_Y ) != 0; }
-	boolean isFlippedXY() { return (flags & FLAG_FLIP_XY) != 0; }
+	boolean isFlippedX () { return hasFlag(FLAG_FLIP_X ); }
+	boolean isFlippedY () { return hasFlag(FLAG_FLIP_Y ); }
+	boolean isFlippedXY() { return hasFlag(FLAG_FLIP_XY); }
 	
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0) {
