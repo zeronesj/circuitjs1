@@ -3581,10 +3581,7 @@ MouseOutHandler, MouseWheelHandler {
     		else if (s.compareTo("Select") == 0)
     			setMouseMode(MODE_SELECT);
 
-		String label = classToLabelMap.get(item);
-		if (label != null)
-		    toolbar.setModeLabel(label);
-		toolbar.highlightButton(mouseModeStr);
+		updateToolbar();
 
     		//		else if (s.length() > 0) {
     		//			try {
@@ -5584,6 +5581,7 @@ MouseOutHandler, MouseWheelHandler {
     		if (code==KEY_ESCAPE){
     			setMouseMode(MODE_SELECT);
     			mouseModeStr = "Select";
+			updateToolbar();
     			tempMouseMode = mouseMode;
     			e.cancel();
     		}
@@ -5646,22 +5644,24 @@ MouseOutHandler, MouseWheelHandler {
     				return;
     			setMouseMode(MODE_ADD_ELM);
     			mouseModeStr=c;
-			toolbar.highlightButton(mouseModeStr);
-			String label = classToLabelMap.get(c);
-			if (label != null)
-			    toolbar.setModeLabel(label);
+			updateToolbar();
     			tempMouseMode = mouseMode;
     		}
     		if (cc==32) {
-			    setMouseMode(MODE_SELECT);
-			    mouseModeStr = "Select";
-			    toolbar.setModeLabel(classToLabelMap.get(mouseModeStr));
-			    tempMouseMode = mouseMode;
-			e.cancel();
+		    setMouseMode(MODE_SELECT);
+		    mouseModeStr = "Select";
+		    updateToolbar();
+		    tempMouseMode = mouseMode;
+		    e.cancel();
     		}
     	}
     }
     
+    void updateToolbar() {
+	toolbar.setModeLabel(classToLabelMap.get(mouseModeStr));
+	toolbar.highlightButton(mouseModeStr);
+    }
+
     // factors a matrix into upper and lower triangular matrices by
     // gaussian elimination.  On entry, a[0..n-1][0..n-1] is the
     // matrix to be factored.  ipvt[] returns an integer vector of pivot
