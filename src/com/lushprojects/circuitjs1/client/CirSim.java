@@ -209,6 +209,8 @@ MouseOutHandler, MouseWheelHandler {
     double maxTimeStep;
     double minTimeStep;
 
+    double wheelSensitivity = 1;
+
     // accumulated time since we incremented timeStepCount
     double timeStepAccum;
 
@@ -827,6 +829,7 @@ MouseOutHandler, MouseWheelHandler {
 	scopePopupMenu = new ScopePopupMenu();
 
 	setColors(positiveColor, negativeColor, neutralColor, selectColor, currentColor);
+	setWheelSensitivity();
 
 	if (startCircuitText != null) {
 	    getSetupList(false);
@@ -922,6 +925,14 @@ MouseOutHandler, MouseWheelHandler {
 	CircuitElm.setColorScale();
     }
     
+    void setWheelSensitivity() {
+	wheelSensitivity = 1;
+	try {
+	    Storage stor = Storage.getLocalStorageIfSupported();
+	    wheelSensitivity = Double.parseDouble(stor.getItem("wheelSensitivity"));
+	} catch (Exception e) {}
+    }
+
     MenuItem menuItemWithShortcut(String icon, String text, String shortcut, MyCommand cmd) {
 	final String edithtml="<div style=\"white-space:nowrap\"><div style=\"display:inline-block;width:100%;\"><i class=\"cirjsicon-";
 	String nbsp = "&nbsp;";
@@ -5026,7 +5037,7 @@ MouseOutHandler, MouseWheelHandler {
     	else if (!dialogIsShowing()) {
     	    mouseCursorX=e.getX();
     	    mouseCursorY=e.getY();
-    	    zoomCircuit(-e.getDeltaY(), false);
+    	    zoomCircuit(-e.getDeltaY()*wheelSensitivity, false);
     	    zoomTime = System.currentTimeMillis();
    	}
     	repaint();

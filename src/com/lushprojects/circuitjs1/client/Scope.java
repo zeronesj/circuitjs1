@@ -242,7 +242,7 @@ class Scope {
     double scale[]; // Max value to scale the display to show - indexed for each value of UNITS - e.g. UNITS_V, UNITS_A etc.
     boolean reduceRange[];
     double scaleX, scaleY;  // for X-Y plots
-    int wheelDeltaY;
+    double wheelDeltaY;
     int selectedPlot;
     ScopePropertiesDialog properties;
     String curColor, voltColor;
@@ -2124,14 +2124,14 @@ class Scope {
     }
     
     void onMouseWheel(MouseWheelEvent e) {
-        wheelDeltaY += e.getDeltaY();
+        wheelDeltaY += e.getDeltaY()*sim.wheelSensitivity;
         if (wheelDeltaY > 5) {
             slowDown();
             wheelDeltaY = 0;
         }
         if (wheelDeltaY < -5) {
             speedUp();
-        	    wheelDeltaY = 0;
+	    wheelDeltaY = 0;
     	}
     }
     
