@@ -2165,7 +2165,7 @@ MouseOutHandler, MouseWheelHandler {
     }
 
     // find or allocate ground node
-    void setGroundNode() {
+    void setGroundNode(boolean subcircuit) {
 	int i;
 	boolean gotGround = false;
 	boolean gotRail = false;
@@ -2190,8 +2190,8 @@ MouseOutHandler, MouseWheelHandler {
 	}
 
 	// if no ground, and no rails, then the voltage elm's first terminal
-	// is ground
-	if (!gotGround && volt != null && !gotRail) {
+	// is ground (but not for subcircuits)
+	if (!subcircuit && !gotGround && volt != null && !gotRail) {
 	    CircuitNode cn = new CircuitNode();
 	    Point pt = volt.getPost(0);
 	    nodeList.addElement(cn);
@@ -2436,12 +2436,12 @@ MouseOutHandler, MouseWheelHandler {
     }
 
     // do the rest of the pre-stamp circuit analysis
-    boolean preStampCircuit() {
+    boolean preStampCircuit(boolean subcircuit) {
 	int i, j;
 	nodeList = new Vector<CircuitNode>();
 
 	calculateWireClosure();
-	setGroundNode();
+	setGroundNode(subcircuit);
 
 	// allocate nodes and voltage sources
 	makeNodeList();
@@ -2502,7 +2502,7 @@ MouseOutHandler, MouseWheelHandler {
 	// preStampCircuit returns false if there's an error.  It can return false if we have capacitor loops
 	// but we just need to try again in that case.  Try again 10 times to avoid infinite loop.
 	for (i = 0; i != 10; i++)
-	    if (preStampCircuit() || stopMessage != null)
+	    if (preStampCircuit(false) || stopMessage != null)
 		break;
 	if (stopMessage != null)
 	    return;
@@ -6488,6 +6488,10 @@ MouseOutHandler, MouseWheelHandler {
 	    boolean used[] = new boolean[nodeList.size()];
 	    boolean extnodes[] = new boolean[nodeList.size()];
 	    
+	    // redo node allocation to avoid auto-assigning ground
+	    if (!preStampCircuit(true))
+		return null;
+
 	    // find all the labeled nodes, get a list of them, and create a node number map
 	    for (i = 0; i != elmList.size(); i++) {
 		CircuitElm ce = getElm(i);
@@ -6511,6 +6515,10 @@ MouseOutHandler, MouseWheelHandler {
 		    // create ext list entry for external nodes
                     sideLabels[side].add(lne);
 		    extnodes[ce.getNode(0)] = true;
+		    if (ce.getNode(0) == 0) {
+		        Window.alert("Node \"" + lne.text + "\" can't be connected to ground");
+			return null;
+		    }
 		}
 	    }
 	    
