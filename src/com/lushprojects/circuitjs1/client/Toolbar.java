@@ -112,9 +112,10 @@ public class Toolbar extends HorizontalPanel {
             public void onClick(ClickEvent event) {
 		// un-highlight
         	iconLabel.getElement().getStyle().setColor("#333");
-		if (iconLabel == activeButton)
+		if (iconLabel == activeButton) {
 		    new MyCommand("main", "Select").execute();
-		else
+		    activeButton = null;
+		} else
 		    command.execute();
             }
         });
