@@ -75,7 +75,7 @@ public class PerfMonitor {
         }
     }-*/;
 
-    class PerfEntry {
+    public class PerfEntry {
     
         public PerfEntry parent;
         public HashMap<String, PerfEntry> children;
